@@ -2,11 +2,11 @@ package com.flab.weshare.domain.base;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
+@Builder
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class BaseResponse<T> {
 	private boolean success;
@@ -14,15 +14,23 @@ public class BaseResponse<T> {
 	private ErrorResponse errorResponse;
 
 	public static <T> BaseResponse sucesss(T data) {
-		return new BaseResponse(true, data, null);
+		return BaseResponse.builder()
+			.success(true)
+			.data(data)
+			.build();
 	}
 
 	public static BaseResponse success() {
-		return new BaseResponse(true, null, null);
+		return BaseResponse.builder()
+			.success(true)
+			.build();
 	}
 
 	public static BaseResponse fail(ErrorResponse errorResponse) {
-		return new BaseResponse(false, null, errorResponse);
+		return BaseResponse.builder()
+			.success(false)
+			.errorResponse(errorResponse)
+			.build();
 	}
 }
 
