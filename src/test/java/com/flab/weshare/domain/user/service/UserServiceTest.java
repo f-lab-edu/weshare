@@ -13,7 +13,7 @@ import com.flab.weshare.domain.user.dto.SignUpRequest;
 import com.flab.weshare.domain.user.entity.User;
 import com.flab.weshare.domain.user.repository.UserRepository;
 import com.flab.weshare.exception.ErrorCode;
-import com.flab.weshare.exception.exceptions.CommonException;
+import com.flab.weshare.exception.exceptions.DuplicateException;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -32,7 +32,7 @@ class UserServiceTest {
 			.willReturn(true);
 
 		assertThatThrownBy(() -> userService.signUp(signUpRequest))
-			.isInstanceOf(CommonException.class)
+			.isInstanceOf(DuplicateException.class)
 			.extracting("errorCode")
 			.isEqualTo(ErrorCode.DUPLICATE_EMAIL);
 	}
@@ -44,7 +44,7 @@ class UserServiceTest {
 			.willReturn(true);
 
 		assertThatThrownBy(() -> userService.signUp(signUpRequest))
-			.isInstanceOf(CommonException.class)
+			.isInstanceOf(DuplicateException.class)
 			.extracting("errorCode")
 			.isEqualTo(ErrorCode.DUPLICATE_NICKNAME);
 	}
