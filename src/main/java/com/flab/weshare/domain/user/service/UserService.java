@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.flab.weshare.domain.user.dto.SignUpRequest;
 import com.flab.weshare.domain.user.repository.UserRepository;
 import com.flab.weshare.exception.ErrorCode;
-import com.flab.weshare.exception.exceptions.CommonException;
+import com.flab.weshare.exception.exceptions.DuplicateException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,10 +18,10 @@ public class UserService {
 	@Transactional
 	public void signUp(SignUpRequest signUpRequest) {
 		if (userRepository.existsByEmail(signUpRequest.email())) {
-			throw new CommonException(ErrorCode.DUPLICATE_EMAIL);
+			throw new DuplicateException(ErrorCode.DUPLICATE_EMAIL);
 		}
 		if (userRepository.existsByNickName(signUpRequest.nickName())) {
-			throw new CommonException(ErrorCode.DUPLICATE_NICKNAME);
+			throw new DuplicateException(ErrorCode.DUPLICATE_NICKNAME);
 		}
 		userRepository.save(signUpRequest.convert());
 	}
