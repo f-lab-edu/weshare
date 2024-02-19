@@ -6,11 +6,18 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		return http
@@ -18,8 +25,8 @@ public class SecurityConfiguration {
 			.csrf(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable)
 			.authorizeHttpRequests((authorizeRequests) -> authorizeRequests
-					.requestMatchers(HttpMethod.POST,"api/*/user").permitAll()
-					.requestMatchers("api/login").permitAll()
+				.requestMatchers(HttpMethod.POST, "api/*/user").permitAll()
+				.requestMatchers("api/login").permitAll()
 					.anyRequest().authenticated()
 			)
 			.build();
