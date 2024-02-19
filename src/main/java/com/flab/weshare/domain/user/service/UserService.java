@@ -1,7 +1,5 @@
 package com.flab.weshare.domain.user.service;
 
-import java.util.List;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,11 +35,6 @@ public class UserService {
 
 	@Transactional(readOnly = true)
 	public LoginResponse login(LoginRequest loginRequest) {
-		List<User> all = userRepository.findAll();
-		System.out.println(all);
-
-		System.out.println(loginRequest);
-
 		User userByEmailAndPassword = userRepository.findByEmailAndPassword(
 			loginRequest.email(),
 			passwordEncoder.encode(loginRequest.password())
