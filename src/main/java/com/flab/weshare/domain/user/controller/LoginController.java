@@ -14,7 +14,7 @@ import com.flab.weshare.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class LoginController {
 	private final UserService userService;
