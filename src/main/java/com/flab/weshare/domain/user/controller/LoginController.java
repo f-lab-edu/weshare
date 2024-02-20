@@ -8,23 +8,20 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.flab.weshare.domain.base.BaseResponse;
-import com.flab.weshare.domain.user.dto.SignUpRequest;
+import com.flab.weshare.domain.user.dto.LoginRequest;
 import com.flab.weshare.domain.user.service.UserService;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/user")
+@RequestMapping("/api")
 @RequiredArgsConstructor
-public class UserController {
+public class LoginController {
 	private final UserService userService;
 
-	@ResponseStatus(HttpStatus.CREATED)
-	@PostMapping
-	public BaseResponse signUpUser(@RequestBody @Valid SignUpRequest signUpRequest) {
-		userService.signUp(signUpRequest);
-
-		return BaseResponse.success();
+	@ResponseStatus(HttpStatus.OK)
+	@PostMapping("/login")
+	public BaseResponse loginAttempt(@RequestBody LoginRequest loginRequest) {
+		return BaseResponse.success(userService.login(loginRequest));
 	}
 }

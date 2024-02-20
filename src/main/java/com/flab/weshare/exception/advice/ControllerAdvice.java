@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.flab.weshare.domain.base.BaseResponse;
 import com.flab.weshare.domain.base.ErrorResponse;
 import com.flab.weshare.exception.ErrorCode;
-import com.flab.weshare.exception.exceptions.DuplicateException;
+import com.flab.weshare.exception.exceptions.CommonClientException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,10 +26,10 @@ public class ControllerAdvice {
 	}
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(DuplicateException.class)
-	public BaseResponse commonExceptionHandler(DuplicateException duplicateException) {
-		log.error("exception :", duplicateException);
-		return BaseResponse.fail(ErrorResponse.of(duplicateException.getErrorCode()));
+	@ExceptionHandler(CommonClientException.class)
+	public BaseResponse commonExceptionHandler(CommonClientException commonClientException) {
+		log.error("exception :", commonClientException);
+		return BaseResponse.fail(ErrorResponse.of(commonClientException.getErrorCode()));
 	}
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)

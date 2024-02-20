@@ -13,7 +13,7 @@ public class BaseResponse<T> {
 	private T data;
 	private ErrorResponse errorResponse;
 
-	public static <T> BaseResponse sucesss(T data) {
+	public static <T> BaseResponse success(T data) {
 		return BaseResponse.builder()
 			.success(true)
 			.data(data)
