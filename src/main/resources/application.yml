@@ -1,3 +1,13 @@
 spring:
   jpa:
     show-sql: true
+
+jwt:
+  access_expiration_time: 3600
+  refresh_expiration_time: 1209600
+  secret: 1012f0d5cd299d1b1902262805c516853e1e1bac511629d97b6
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
