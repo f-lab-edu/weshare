@@ -1,4 +1,4 @@
-package com.flab.weshare.domain.user.dto;
+package com.flab.weshare.domain.auth.dto;
 
 public record LoginRequest(String email, String password) {
 	@Override
