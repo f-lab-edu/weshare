@@ -12,6 +12,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.flab.weshare.utils.jwt.JwtAuthorizationFilter;
 import com.flab.weshare.utils.jwt.JwtExceptionHandlerFilter;
+import com.flab.weshare.utils.jwt.RestAuthenticationEntryPoint;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @EnableWebSecurity(debug = true)
 public class SecurityConfiguration {
+	private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 	private final JwtAuthorizationFilter jwtAuthorizationFilter;
 	private final JwtExceptionHandlerFilter jwtExceptionHandlerFilter;
 
@@ -37,6 +39,8 @@ public class SecurityConfiguration {
 			)
 			.addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(jwtExceptionHandlerFilter, JwtAuthorizationFilter.class)
+			.exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
+				httpSecurityExceptionHandlingConfigurer.authenticationEntryPoint(restAuthenticationEntryPoint))
 			.build();
 	}
 }
