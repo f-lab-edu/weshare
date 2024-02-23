@@ -36,20 +36,14 @@ public class AuthService {
 			throw new CommonClientException(ErrorCode.WRONG_PASSWORD);
 		}
 
-		String accessToken = jwtUtil.createAccessToken(userByEmailAndPassword.getId());
-		String refreshToken = jwtUtil.createRefreshToken(userByEmailAndPassword.getId());
-
-		return LoginResponse.builder()
-			.accessToken(accessToken)
-			.refreshToken(refreshToken)
-			.build();
+		return createLoginResponse(userByEmailAndPassword.getId());
 	}
 
 	@Transactional
 	public void logout(JwtAuthentication jwtAuthentication) {
 		RefreshToken logOutRefreshToken = RefreshToken.builder()
-			.token(jwtAuthentication.token())
-			.expiredDate(jwtAuthentication.expirationTime())
+			.token(jwtAuthentication.getToken())
+			.expiredDate(jwtAuthentication.getExpirationTime())
 			.build();
 
 		authRepository.save(logOutRefreshToken);
@@ -57,14 +51,20 @@ public class AuthService {
 
 	@Transactional
 	public LoginResponse reIssue(JwtAuthentication jwtAuthentication) {
-		if (authRepository.existsByToken(jwtAuthentication.token())) {
+		if (authRepository.existsByToken(jwtAuthentication.getToken())) {
 			throw new UnacceptedAuthrizationException(ErrorCode.ALREADY_LOGGED_OUT);
 		}
 
-		String reIssuedAccessToken = jwtUtil.createAccessToken(jwtAuthentication.id());
+		return createLoginResponse(jwtAuthentication.getId());
+	}
+
+	private LoginResponse createLoginResponse(Long userId) {
+		String accessToken = jwtUtil.createAccessToken(userId);
+		String refreshToken = jwtUtil.createRefreshToken(userId);
 
 		return LoginResponse.builder()
-			.accessToken(reIssuedAccessToken)
+			.accessToken(accessToken)
+			.refreshToken(refreshToken)
 			.build();
 	}
 }
