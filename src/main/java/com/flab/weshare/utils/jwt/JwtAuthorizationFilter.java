@@ -33,23 +33,22 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
 
-		String authorizationHeader = request.getHeader("Authorization");
+		String authorizationHeader = request.getHeader(JwtProperties.HEADER);
 
 		//header 예시 -> Authorization: Bearer dsfH3itgfgdfasdf...
-		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-			String token = authorizationHeader.substring(7);
-			JwtHolder jwtHolder = parseToken(token);
-			 //jwt 유효성검사 실패시 예외 발생.
-			if (uriMatchesAccessToken(request,jwtHolder) || uriMatchesRefreshToken(request,jwtHolder)) {
-				setAuthenticationFromJwt(jwtHolder);
-			}
+		if (authorizationHeader != null && authorizationHeader.startsWith(JwtProperties.TOKEN_PREFIX)) {
+			String token = authorizationHeader.substring(JwtProperties.TOKEN_PREFIX_LENGTH);
+			proceedAuthentication(request, token);
 		}
 		filterChain.doFilter(request, response);
 	}
 
-	private JwtHolder parseToken(String token) {
+	private void proceedAuthentication(HttpServletRequest request, String token) {
 		try {
-			return new JwtHolder(jwtUtil.parseToken(token), token);
+			JwtHolder jwtHolder = new JwtHolder(jwtUtil.parseToken(token), token);
+			if (isRefreshTokenBasedRequest(request, jwtHolder) || isAccessedTokenBasedRequest(request, jwtHolder)) {
+				setAuthenticationFromJwt(jwtHolder);
+			}
 		} catch (MalformedJwtException | SignatureException e) {
 			logInvalidTokenException(e, token);
 			throw new InvalidTokenException(ErrorCode.MALFORMED_JWT);
@@ -65,27 +64,26 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 		}
 	}
 
-	private void logInvalidTokenException(Exception e, String token){
+	private void logInvalidTokenException(Exception e, String token) {
 		log.info("exception : {} "
-			+ "token : {}"
+				+ "token : {}"
 			, e.getClass().getSimpleName(), token);
 	}
 
-	private boolean uriMatchesRefreshToken(HttpServletRequest request, JwtHolder jwtHolder) {
+	private boolean isRefreshTokenBasedRequest(HttpServletRequest request, JwtHolder jwtHolder) {
 		return isRequireRefreshToken(request) && jwtHolder.isRefreshToken();
 	}
 
-	private boolean uriMatchesAccessToken(HttpServletRequest request, JwtHolder jwtHolder) {
+	private boolean isAccessedTokenBasedRequest(HttpServletRequest request, JwtHolder jwtHolder) {
 		return !isRequireRefreshToken(request) && jwtHolder.isAccessToken();
 	}
 
-	
 	private boolean isRequireRefreshToken(HttpServletRequest request) {
 		return request.getRequestURI().endsWith("/logout") || request.getRequestURI().endsWith("/reissue");
 	}
 
 	private void setAuthenticationFromJwt(JwtHolder jwtHolder) {
-		JwtAuthentication jwtAuthentication = new JwtAuthentication(jwtHolder.getToken(), jwtHolder.getUserId(), jwtHolder.getExpirationTime());
+		JwtAuthentication jwtAuthentication = new JwtAuthentication(jwtHolder);
 		JwtAuthenticationToken jwtAuthenticationToken = new JwtAuthenticationToken(jwtAuthentication, List.of(
 			new SimpleGrantedAuthority(Role.CLIENT.toString())));
 

@@ -32,21 +32,21 @@ public class JwtUtil {
 	}
 
 	public String createAccessToken(Long id) {
-		return createToken(id,"access",accessTokenExpTime);
+		return createToken(id, JwtProperties.ACCESS_TOKEN_NAME, accessTokenExpTime);
 	}
 
 	public String createRefreshToken(Long id) {
-		return createToken(id,"refresh",refreshTokenExpTime);
+		return createToken(id, JwtProperties.REFRESH_TOKEN_NAME, refreshTokenExpTime);
 	}
 
 	private String createToken(Long id, String tokenType, long expirationTime) {
 		Claims claims = Jwts.claims();
-		claims.put("userId", id.toString());
+		claims.put(JwtProperties.USER_ID, id.toString());
 
 		ZonedDateTime publishedTime = ZonedDateTime.now();
 
 		return Jwts.builder()
-			.setHeaderParam("token", tokenType)
+			.setHeaderParam(JwtProperties.TOKEN_TYPE, tokenType)
 			.setClaims(claims)
 			.setIssuedAt(Date.from(publishedTime.toInstant()))
 			.setExpiration(Date.from(publishedTime.plusSeconds(expirationTime).toInstant()))
