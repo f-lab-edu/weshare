@@ -4,17 +4,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.flab.weshare.domain.user.dto.LoginRequest;
-import com.flab.weshare.domain.user.dto.LoginResponse;
 import com.flab.weshare.domain.user.dto.SignUpRequest;
-import com.flab.weshare.domain.user.entity.User;
 import com.flab.weshare.domain.user.repository.UserRepository;
 import com.flab.weshare.exception.ErrorCode;
-import com.flab.weshare.exception.exceptions.CommonClientException;
 import com.flab.weshare.exception.exceptions.DuplicateException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -31,15 +29,5 @@ public class UserService {
 		}
 		String encodedPassword = passwordEncoder.encode(signUpRequest.password());
 		userRepository.save(signUpRequest.convert(encodedPassword));
-	}
-
-	@Transactional(readOnly = true)
-	public LoginResponse login(LoginRequest loginRequest) {
-		User userByEmailAndPassword = userRepository.findByEmailAndPassword(
-			loginRequest.email(),
-			passwordEncoder.encode(loginRequest.password())
-		).orElseThrow(() -> new CommonClientException(ErrorCode.USER_NOT_FOUND));
-
-		return LoginResponse.from(userByEmailAndPassword);
 	}
 }
