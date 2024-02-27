@@ -14,7 +14,7 @@ import com.flab.weshare.exception.ErrorCode;
 
 public class AuthControllerTest extends BaseControllerTest {
 	LoginRequest rightloginRequest = new LoginRequest(EMAIL, PASSWORD);
-	LoginRequest wrongPasswordLoginRequest = new LoginRequest(EMAIL + "1", PASSWORD + "1");
+	LoginRequest wrongPasswordLoginRequest = new LoginRequest(EMAIL, PASSWORD + "1");
 
 	@DisplayName("로그인 성공시 액세스 토큰과 리프레시 토큰 반환")
 	@Test
