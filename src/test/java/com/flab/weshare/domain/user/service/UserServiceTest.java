@@ -23,7 +23,7 @@ class UserServiceTest {
 	@Mock
 	UserRepository userRepository;
 
-	SignUpRequest signUpRequest = new SignUpRequest("test@email.com", "test", "01011111111");
+	SignUpRequest signUpRequest = new SignUpRequest("test@email.com", "fffdfdf2@", "test", "01011111111");
 
 	@Test
 	void signUp_중복_이메일() {
