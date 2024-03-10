@@ -1,18 +1,18 @@
 spring:
   config:
     import: optional:file:.env[.properties]
+
   datasource:
-    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
-    url: jdbc:tc:mysql:8:///
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USER_NAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     open-in-view: false
-    hibernate:
-      ddl-auto: create
-    database-platform: org.hibernate.dialect.MySQLDialect
+    database-platform: org.hibernate.dialect.MySQL8Dialect
 
 jwt:
   access_expiration_time: ${JWT_ACCESS_EXPIRATION_TIME}
   refresh_expiration_time: ${JWT_REFRESH_EXPIRATION_TIME}
   secret: ${JWT_SECRET}
-

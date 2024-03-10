@@ -1,13 +1,6 @@
 spring:
-  jpa:
-    show-sql: true
-
-jwt:
-  access_expiration_time: ${JWT_ACCESS_EXPIRATION_TIME}
-  refresh_expiration_time: ${JWT_REFRESH_EXPIRATION_TIME}
-  secret: ${JWT_SECRET}
-
-decorator:
-  datasource:
-    p6spy:
-      enable-logging: true
+  profiles:
+    default: local
+    group:
+      "local": "local, common"
+      "prod": "prod, common"
