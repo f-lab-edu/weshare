@@ -7,15 +7,14 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flab.weshare.config.TestContainerConfig;
+import com.flab.weshare.domain.party.entity.Ott;
+import com.flab.weshare.domain.party.entity.Party;
 import com.flab.weshare.domain.party.entity.PartyMember;
 import com.flab.weshare.domain.party.entity.PartyMemberStatus;
 import com.flab.weshare.domain.party.repository.OttRepository;
@@ -24,28 +23,14 @@ import com.flab.weshare.domain.party.repository.PartyRepository;
 import com.flab.weshare.domain.user.entity.Role;
 import com.flab.weshare.domain.user.entity.User;
 import com.flab.weshare.domain.user.repository.UserRepository;
-import com.flab.weshare.utils.jwt.JwtProperties;
-import com.flab.weshare.utils.jwt.JwtUtil;
-
-import jakarta.persistence.EntityManager;
 
 @ActiveProfiles("test")
-@Transactional
 @Import({TestContainerConfig.class})
-@SpringBootTest
-@AutoConfigureMockMvc
-public abstract class BaseControllerTest {
-	@Autowired
-	protected MockMvc mockMvc;
-
-	@Autowired
-	protected ObjectMapper objectMapper;
-
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@DataJpaTest
+public abstract class BaseRepositoryTest {
 	@Autowired
 	protected UserRepository userRepository;
-
-	@Autowired
-	protected OttRepository ottRepository;
 
 	@Autowired
 	protected PartyRepository partyRepository;
@@ -54,40 +39,48 @@ public abstract class BaseControllerTest {
 	protected PartyMemberRepository partyMemberRepository;
 
 	@Autowired
-	EntityManager entityManager;
+	protected OttRepository ottRepository;
 
-	@Autowired
-	JwtUtil jwtUtil;
-
-	protected String ACCESS_TOKEN;
-	protected String REFRESH_TOKEN;
+	protected Party savedParty;
 
 	@BeforeEach
-	void setUpLogin() {
-		saveEntities();
-		ACCESS_TOKEN = JwtProperties.TOKEN_PREFIX + jwtUtil.createAccessToken(savedUser.getId());
-		REFRESH_TOKEN = JwtProperties.TOKEN_PREFIX + jwtUtil.createRefreshToken(savedUser.getId());
-	}
-
-	private void saveEntities() {
-		userRepository.save(savedUser);
-		ottRepository.save(savedOtt);
-		partyRepository.save(savedParty);
-
+	void setUp() {
 		List<User> members = new ArrayList<>();
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < 4; i++) {
 			User build = User.builder()
 				.nickName(NICKNAME + i)
-				.email(EMAIL + i)
+				.email(EMAIL)
 				.password(PASSWORD)
 				.telephone(TELEPHONE)
 				.role(Role.CLIENT)
 				.build();
+
 			members.add(build);
 		}
+
+		userRepository.save(savedUser);
 		userRepository.saveAll(members);
 
-		for (int i = 0; i < 2; i++) {
+		Ott testOtt = Ott.builder()
+			.name("test")
+			.leaderFee(3000)
+			.commonFee(2000)
+			.maximumCapacity(4)
+			.build();
+
+		ottRepository.save(testOtt);
+
+		savedParty = Party.builder()
+			.leader(savedUser)
+			.ott(testOtt)
+			.capacity(4)
+			.ottAccountId("dsafadsfd")
+			.ottAccountPassword("adsfeeff33")
+			.build();
+
+		partyRepository.save(savedParty);
+
+		for (int i = 0; i < 3; i++) {
 			PartyMember build = PartyMember.builder()
 				.party(savedParty)
 				.partyMember(members.get(i))
@@ -95,7 +88,6 @@ public abstract class BaseControllerTest {
 				.build();
 			partyMemberRepository.save(build);
 		}
-
-		entityManager.clear();
 	}
+
 }
