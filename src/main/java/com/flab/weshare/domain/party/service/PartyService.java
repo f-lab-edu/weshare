@@ -29,11 +29,11 @@ public class PartyService {
 	public Long generateParty(final PartyCreationRequest partyCreationRequest, final Long requestPartyLeaderId) {
 		Ott requestOtt = ottRepository.findById(partyCreationRequest.ottId())
 			.orElseThrow(() -> new CommonClientException(ErrorCode.makeSpecificResourceNotFoundErrorCode("ott")));
-		User requestPartyLeader = userRepository.getReferenceById(requestPartyLeaderId);
-		String encodedPassword = passwordEncoder.encode(partyCreationRequest.ottAccountPassword());
 
 		validateCapacity(requestOtt, partyCreationRequest.capacity());
 
+		User requestPartyLeader = userRepository.getReferenceById(requestPartyLeaderId);
+		String encodedPassword = passwordEncoder.encode(partyCreationRequest.ottAccountPassword());
 		Party generateParty = Party.builder()
 			.ott(requestOtt)
 			.leader(requestPartyLeader)
@@ -57,10 +57,11 @@ public class PartyService {
 	public void updatePartyDetails(final Long partyId, final ModifyPartyRequest modifyPartyRequest) {
 		Party party = partyRepository.findFetchByPartyId(partyId)
 			.orElseThrow(() -> new CommonClientException(ErrorCode.makeSpecificResourceNotFoundErrorCode("party")));
-		String encodedPassword = passwordEncoder.encode(modifyPartyRequest.password());
 
 		validateCapacity(party.getOtt(), modifyPartyRequest.capacity());
 		validateChangeableCapacity(party, modifyPartyRequest);
+
+		String encodedPassword = passwordEncoder.encode(modifyPartyRequest.password());
 
 		party.changeCapacity(modifyPartyRequest.capacity());
 		party.changePassword(encodedPassword);
