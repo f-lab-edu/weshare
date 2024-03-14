@@ -47,7 +47,7 @@ public class PartyService {
 		return generateParty.getId();
 	}
 
-	private void validateCapacity(Ott requestOtt, int capacity) {
+	private void validateCapacity(final Ott requestOtt, final int capacity) {
 		if (!requestOtt.isValidCapacity(capacity)) {
 			throw new CommonClientException(ErrorCode.INVALID_CAPACITY);
 		}
@@ -66,7 +66,7 @@ public class PartyService {
 		party.changePassword(encodedPassword);
 	}
 
-	private void validateChangeableCapacity(Party party, ModifyPartyRequest modifyPartyRequest) {
+	private void validateChangeableCapacity(final Party party, final ModifyPartyRequest modifyPartyRequest) {
 		if (!party.isChangeableCapacity(modifyPartyRequest.capacity())) {
 
 			throw new CommonClientException(ErrorCode.INSUFFICIENT_CAPACITY);

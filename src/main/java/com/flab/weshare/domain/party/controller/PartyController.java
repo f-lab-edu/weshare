@@ -29,8 +29,8 @@ public class PartyController {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public BaseResponse createParty(@RequestBody @Valid PartyCreationRequest partyCreationRequest,
-		@AuthenticationPrincipal JwtAuthentication jwtAuthentication) {
+	public BaseResponse createParty(@RequestBody @Valid final PartyCreationRequest partyCreationRequest,
+		@AuthenticationPrincipal final JwtAuthentication jwtAuthentication) {
 
 		Long generatedPartyId = partyService.generateParty(partyCreationRequest, jwtAuthentication.getId());
 
@@ -39,8 +39,8 @@ public class PartyController {
 
 	@PutMapping("/{partyId}")
 	@ResponseStatus(HttpStatus.OK)
-	public BaseResponse patchPartyCapacity(@PathVariable Long partyId
-		, @RequestBody @Valid ModifyPartyRequest modifyPartyRequest) {
+	public BaseResponse patchPartyCapacity(@PathVariable final Long partyId
+		, @RequestBody @Valid final ModifyPartyRequest modifyPartyRequest) {
 
 		partyService.updatePartyDetails(partyId, modifyPartyRequest);
 
