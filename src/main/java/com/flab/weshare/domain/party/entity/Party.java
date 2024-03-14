@@ -73,8 +73,6 @@ public class Party extends BaseEntity {
 	}
 
 	public boolean isChangeableCapacity(int capacity) {
-		System.out.println(capacity);
-		System.out.println(this.partyMembers.size());
 		return this.partyMembers.size() <= capacity - 1;
 	}
 
