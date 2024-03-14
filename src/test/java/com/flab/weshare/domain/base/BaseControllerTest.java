@@ -64,16 +64,39 @@ public abstract class BaseControllerTest {
 
 	@BeforeEach
 	void setUpLogin() {
-		saveEntities();
+		userRepository.save(savedUser);
 		ACCESS_TOKEN = JwtProperties.TOKEN_PREFIX + jwtUtil.createAccessToken(savedUser.getId());
 		REFRESH_TOKEN = JwtProperties.TOKEN_PREFIX + jwtUtil.createRefreshToken(savedUser.getId());
 	}
 
-	private void saveEntities() {
-		userRepository.save(savedUser);
+	@BeforeEach
+	void saveEntities() {
 		ottRepository.save(savedOtt);
 		partyRepository.save(savedParty);
 
+		List<User> users = createUsers();
+		userRepository.saveAll(users);
+
+		List<PartyMember> partyMembers = createPartyMembers(users);
+		partyMemberRepository.saveAll(partyMembers);
+
+		entityManager.clear();
+	}
+
+	private List<PartyMember> createPartyMembers(List<User> users) {
+		List<PartyMember> partyMembers = new ArrayList<>();
+		for (int i = 0; i < 2; i++) {
+			PartyMember partyMember = PartyMember.builder()
+				.party(savedParty)
+				.partyMember(users.get(i))
+				.partyMemberStatus(PartyMemberStatus.ATTENDING)
+				.build();
+			partyMembers.add(partyMember);
+		}
+		return partyMembers;
+	}
+
+	private List<User> createUsers() {
 		List<User> members = new ArrayList<>();
 		for (int i = 0; i < 2; i++) {
 			User build = User.builder()
@@ -85,17 +108,6 @@ public abstract class BaseControllerTest {
 				.build();
 			members.add(build);
 		}
-		userRepository.saveAll(members);
-
-		for (int i = 0; i < 2; i++) {
-			PartyMember build = PartyMember.builder()
-				.party(savedParty)
-				.partyMember(members.get(i))
-				.partyMemberStatus(PartyMemberStatus.ATTENDING)
-				.build();
-			partyMemberRepository.save(build);
-		}
-
-		entityManager.clear();
+		return members;
 	}
 }
