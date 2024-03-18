@@ -42,7 +42,7 @@ public class PartyController {
 	public BaseResponse patchPartyCapacity(@PathVariable final Long partyId
 		, @RequestBody @Valid final ModifyPartyRequest modifyPartyRequest) {
 
-		partyService.updatePartyDetails(partyId, modifyPartyRequest);
+		partyService.updatePartyDetails(modifyPartyRequest, partyId);
 
 		return BaseResponse.success();
 	}

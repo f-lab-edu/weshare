@@ -54,7 +54,7 @@ public class PartyService {
 	}
 
 	@Transactional
-	public void updatePartyDetails(final Long partyId, final ModifyPartyRequest modifyPartyRequest) {
+	public void updatePartyDetails(final ModifyPartyRequest modifyPartyRequest, final Long partyId) {
 		Party party = partyRepository.findFetchByPartyId(partyId)
 			.orElseThrow(() -> new CommonClientException(ErrorCode.makeSpecificResourceNotFoundErrorCode("party")));
 
