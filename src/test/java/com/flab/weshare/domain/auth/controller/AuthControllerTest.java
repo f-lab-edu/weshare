@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import com.flab.weshare.domain.auth.dto.LoginRequest;
 import com.flab.weshare.domain.base.BaseControllerTest;
 import com.flab.weshare.exception.ErrorCode;
+import com.flab.weshare.utils.jwt.JwtProperties;
 
 public class AuthControllerTest extends BaseControllerTest {
 	LoginRequest rightloginRequest = new LoginRequest(EMAIL, PASSWORD);
@@ -44,7 +45,7 @@ public class AuthControllerTest extends BaseControllerTest {
 	@Test
 	void logout_success() throws Exception {
 		mockMvc.perform(post("/api/logout")
-				.header("Authorization", "Bearer " + REFRESH_TOKEN))
+				.header(JwtProperties.HEADER, REFRESH_TOKEN))
 			.andExpect(status().isOk());
 	}
 
@@ -59,7 +60,7 @@ public class AuthControllerTest extends BaseControllerTest {
 	@Test
 	void reIssue_success() throws Exception {
 		mockMvc.perform(post("/api/reissue")
-				.header("Authorization", "Bearer " + REFRESH_TOKEN))
+				.header(JwtProperties.HEADER, REFRESH_TOKEN))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.accessToken").exists())
 			.andExpect(jsonPath("$.data.refreshToken").exists());

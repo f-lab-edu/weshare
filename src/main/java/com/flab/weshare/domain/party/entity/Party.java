@@ -3,6 +3,8 @@ package com.flab.weshare.domain.party.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 import com.flab.weshare.domain.base.BaseEntity;
 import com.flab.weshare.domain.user.entity.User;
 
@@ -24,6 +26,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@DynamicUpdate
 @Getter
 public class Party extends BaseEntity {
 	@Id
@@ -52,7 +55,7 @@ public class Party extends BaseEntity {
 	@Column(nullable = false)
 	private PartyStatus partyStatus;
 
-	@OneToMany(mappedBy = "partyMember")
+	@OneToMany(mappedBy = "party")
 	private List<PartyMember> partyMembers = new ArrayList<>();
 
 	@Builder
@@ -63,5 +66,17 @@ public class Party extends BaseEntity {
 		this.ottAccountPassword = ottAccountPassword;
 		this.capacity = capacity;
 		this.partyStatus = PartyStatus.RUNNING;
+	}
+
+	public void changeCapacity(int capacity) {
+		this.capacity = capacity;
+	}
+
+	public boolean isChangeableCapacity(int capacity) {
+		return this.partyMembers.size() <= capacity - 1;
+	}
+
+	public void changePassword(String encodedPassword) {
+		this.ottAccountPassword = encodedPassword;
 	}
 }
