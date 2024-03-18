@@ -39,7 +39,7 @@ public class PartyJoin extends BaseEntity {
 	private PartyJoinStatus partyJoinStatus;
 
 	@Builder
-	private PartyJoin(User user, Ott ott, PartyJoinStatus partyJoinStatus) {
+	private PartyJoin(User user, Ott ott) {
 		this.user = user;
 		this.ott = ott;
 		this.partyJoinStatus = PartyJoinStatus.WAITING;

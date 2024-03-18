@@ -6,9 +6,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.flab.weshare.domain.party.dto.ModifyPartyRequest;
 import com.flab.weshare.domain.party.dto.PartyCreationRequest;
+import com.flab.weshare.domain.party.dto.PartyJoinRequest;
 import com.flab.weshare.domain.party.entity.Ott;
 import com.flab.weshare.domain.party.entity.Party;
+import com.flab.weshare.domain.party.entity.PartyJoin;
 import com.flab.weshare.domain.party.repository.OttRepository;
+import com.flab.weshare.domain.party.repository.PartyJoinRepository;
 import com.flab.weshare.domain.party.repository.PartyRepository;
 import com.flab.weshare.domain.user.entity.User;
 import com.flab.weshare.domain.user.repository.UserRepository;
@@ -21,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PartyService {
 	private final PartyRepository partyRepository;
+	private final PartyJoinRepository partyJoinRepository;
 	private final OttRepository ottRepository;
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
@@ -54,7 +58,7 @@ public class PartyService {
 	}
 
 	@Transactional
-	public void updatePartyDetails(final Long partyId, final ModifyPartyRequest modifyPartyRequest) {
+	public void updatePartyDetails(final ModifyPartyRequest modifyPartyRequest, final Long partyId) {
 		Party party = partyRepository.findFetchByPartyId(partyId)
 			.orElseThrow(() -> new CommonClientException(ErrorCode.makeSpecificResourceNotFoundErrorCode("party")));
 
@@ -72,5 +76,20 @@ public class PartyService {
 
 			throw new CommonClientException(ErrorCode.INSUFFICIENT_CAPACITY);
 		}
+	}
+
+	@Transactional
+	public Long generatePartyJoin(final PartyJoinRequest PartyJoinRequest, final Long userId) {
+		User partyParticipant = userRepository.getReferenceById(userId);
+		Ott selectedOtt = ottRepository.getReferenceById(PartyJoinRequest.ottId());
+
+		PartyJoin partyJoin = PartyJoin.builder()
+			.ott(selectedOtt)
+			.user(partyParticipant)
+			.build();
+
+		partyJoinRepository.save(partyJoin);
+
+		return partyJoin.getId();
 	}
 }

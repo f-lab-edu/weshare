@@ -102,7 +102,7 @@ class PartyServiceTest {
 		given(mockParty.getOtt()).willReturn(savedOtt);
 		given(mockParty.isChangeableCapacity(anyInt())).willReturn(true);
 
-		partyService.updatePartyDetails(1L, modifyPartyRequest);
+		partyService.updatePartyDetails(modifyPartyRequest, 1L);
 		then(mockParty).should(times(1)).changePassword(passwordEncoder.encode(modifyPartyRequest.password()));
 		then(mockParty).should(times(1)).changeCapacity(modifyPartyRequest.capacity());
 	}
@@ -116,7 +116,7 @@ class PartyServiceTest {
 		given(mockParty.getOtt()).willReturn(savedOtt);
 		given(mockParty.isChangeableCapacity(anyInt())).willReturn(false);
 
-		assertThatThrownBy(() -> partyService.updatePartyDetails(1L, modifyPartyRequest))
+		assertThatThrownBy(() -> partyService.updatePartyDetails(modifyPartyRequest, 1L))
 			.isInstanceOf(CommonClientException.class)
 			.extracting("errorCode")
 			.isEqualTo(ErrorCode.INSUFFICIENT_CAPACITY);
