@@ -19,7 +19,9 @@ public class ErrorCode {
 	public static final ErrorCode INVALID_CAPACITY = new ErrorCode("INVALID_CAPACITY", "파티의 정원수가 잘못되었습니다.");
 	public static final ErrorCode INSUFFICIENT_CAPACITY = new ErrorCode("INSUFFICIENT_CAPACITY",
 		"현재 파티인원보다 작을 수 없습니다.");
-	private static final ErrorCode RESOURCE_NOT_FOUND = new ErrorCode("RESOURCE_NOT_FOUND", " 리소스를 찾을 수 없습니다.");
+	public static final ErrorCode RESOURCE_NOT_FOUND = new ErrorCode("RESOURCE_NOT_FOUND", "리소스를 찾을 수 없습니다.");
+	public static final ErrorCode DATA_INTEGRITY_VIOLATION = new ErrorCode("DATA_INTEGRITY_VIOLATION",
+		"DB 오류가 발생했습니다.");
 
 	private final String errorCode;
 	private final String errorMessage;
