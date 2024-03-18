@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.flab.weshare.domain.base.BaseResponse;
 import com.flab.weshare.domain.party.dto.ModifyPartyRequest;
 import com.flab.weshare.domain.party.dto.PartyCreationRequest;
+import com.flab.weshare.domain.party.dto.PartyJoinRequest;
 import com.flab.weshare.domain.party.service.PartyService;
 import com.flab.weshare.utils.jwt.JwtAuthentication;
 
@@ -45,5 +46,15 @@ public class PartyController {
 		partyService.updatePartyDetails(modifyPartyRequest, partyId);
 
 		return BaseResponse.success();
+	}
+
+	@PostMapping("/join")
+	@ResponseStatus(HttpStatus.CREATED)
+	public BaseResponse createPartyRequest(@RequestBody @Valid final PartyJoinRequest partyJoinRequest,
+		@AuthenticationPrincipal final JwtAuthentication jwtAuthentication) {
+
+		Long generatedPartyJoinId = partyService.generatePartyJoin(partyJoinRequest, jwtAuthentication.getId());
+
+		return BaseResponse.created(generatedPartyJoinId);
 	}
 }
