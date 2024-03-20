@@ -64,7 +64,7 @@ class PartyControllerTest extends BaseControllerTest {
 	@DisplayName("현재 파티의 인원수보다 적게 정원수를 변경할 수 없다.")
 	@Test
 	void failPartyUpdate() throws Exception {
-		ModifyPartyRequest modifyPartyRequest = new ModifyPartyRequest(2, "asddff222");
+		ModifyPartyRequest modifyPartyRequest = new ModifyPartyRequest(1, "asddff222");
 		mockMvc.perform(put("/api/v1/party/" + savedParty.getId())
 				.header(JwtProperties.HEADER, ACCESS_TOKEN)
 				.contentType(MediaType.APPLICATION_JSON)
@@ -78,7 +78,7 @@ class PartyControllerTest extends BaseControllerTest {
 	@DisplayName("파티요청을 생성할 수 있다.")
 	@Test
 	void success_party_join_creation() throws Exception {
-		PartyJoinRequest partyCreationRequest = new PartyJoinRequest(savedParty.getId());
+		PartyJoinRequest partyCreationRequest = new PartyJoinRequest(savedOtt.getId());
 
 		mockMvc.perform(post("/api/v1/party/join")
 				.header(JwtProperties.HEADER, ACCESS_TOKEN)
