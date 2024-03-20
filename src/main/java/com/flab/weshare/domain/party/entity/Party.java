@@ -56,7 +56,7 @@ public class Party extends BaseEntity {
 	private PartyStatus partyStatus;
 
 	@OneToMany(mappedBy = "party")
-	private List<PartyMember> partyMembers = new ArrayList<>();
+	private List<PartyCapsule> partyCapsules = new ArrayList<>(); //EMPTY, OCCUPIED 상태의 PartyCapsule 만 존재.
 
 	@Builder
 	private Party(User leader, Ott ott, String ottAccountId, String ottAccountPassword, int capacity) {
@@ -72,11 +72,31 @@ public class Party extends BaseEntity {
 		this.capacity = capacity;
 	}
 
-	public boolean isChangeableCapacity(int capacity) {
-		return this.partyMembers.size() <= capacity - 1;
+	public int getCapsulesSize() {
+		return this.partyCapsules.size();
+	}
+
+	public int countOccupiedPartyCapsule() {
+		return (int)partyCapsules.stream()
+			.filter(pc -> pc.getPartyCapsuleStatus().equals(PartyCapsuleStatus.OCCUPIED))
+			.count();
 	}
 
 	public void changePassword(String encodedPassword) {
 		this.ottAccountPassword = encodedPassword;
+	}
+
+	public void deleteEmptyCapsules(final int deleteTargetCount) {
+		int deleteChecks = deleteTargetCount;
+
+		for (PartyCapsule partyCapsule : this.partyCapsules) {
+			if (partyCapsule.getPartyCapsuleStatus().equals(PartyCapsuleStatus.EMPTY)) {
+				partyCapsule.deleteCapsule();
+				--deleteChecks;
+			}
+			if (deleteChecks == 0) {
+				return;
+			}
+		}
 	}
 }
