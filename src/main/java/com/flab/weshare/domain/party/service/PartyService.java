@@ -46,6 +46,21 @@ public class PartyService {
 
 		User requestPartyLeader = userRepository.getReferenceById(requestPartyLeaderId);
 		String encodedPassword = passwordEncoder.encode(partyCreationRequest.ottAccountPassword());
+		Party generatedParty = saveParty(partyCreationRequest, requestOtt, requestPartyLeader, encodedPassword);
+
+		savePartyCapsules(partyCreationRequest.capacity(), generatedParty);
+		return generatedParty.getId();
+	}
+
+	private void savePartyCapsules(int partyCreationRequest, Party generatedParty) {
+		List<PartyCapsule> generatedPartyCapsules = generateEmptyPartyCapsules(partyCreationRequest,
+			generatedParty);
+		partyCapsuleRepository.saveAll(generatedPartyCapsules);
+	}
+
+	private Party saveParty(PartyCreationRequest partyCreationRequest, Ott requestOtt,
+		User requestPartyLeader,
+		String encodedPassword) {
 		Party generatedParty = Party.builder()
 			.ott(requestOtt)
 			.leader(requestPartyLeader)
@@ -55,11 +70,7 @@ public class PartyService {
 			.build();
 
 		partyRepository.save(generatedParty);
-
-		List<PartyCapsule> generatedPartyCapsules = generateEmptyPartyCapsules(partyCreationRequest.capacity(),
-			generatedParty);
-		partyCapsuleRepository.saveAll(generatedPartyCapsules);
-		return generatedParty.getId();
+		return generatedParty;
 	}
 
 	private List<PartyCapsule> generateEmptyPartyCapsules(int capacity, Party party) {
@@ -92,29 +103,10 @@ public class PartyService {
 		synchronizeCapacity(party, modifyPartyRequest.capacity());
 	}
 
-	/**
-	 * synchrnoizeCapacity()
-	 * 1) 만약 현재 occupied + empty > capcity
-	 * empty PartyCapsule의 숫자를 capacity - occupied로 맞춤.
-	 * empty PartyCapsule의 상태를 변경. empty->delete
-	 * <p>
-	 * 2) 만약 현재 occupied + empty == capcity
-	 * 아무것도 하지않음
-	 * <p>
-	 * 3) 만약 현재 occupied + empty < capacity
-	 * empty PartyCapsule의 숫자를 추가.
-	 * 이게 문제임. delete시 ==> 차라리 delete를 일
-	 */
 	private void synchronizeCapacity(final Party party, final int newCapacity) {
-		if (party.getCapsulesSize() > newCapacity) {
-			party.deleteEmptyCapsules(party.getCapsulesSize()
-				- newCapacity);  // empty : 1개 occu:2개 capa :3개 full -> capa:2개 -> size - capa delete
-			return;
-		}
-
+		party.deleteEmptyCapsules(newCapacity);
 		if (party.getCapsulesSize() < newCapacity) {
-			List<PartyCapsule> partyCapsules = generateEmptyPartyCapsules(newCapacity - party.getCapsulesSize(), party);
-			partyCapsuleRepository.saveAll(partyCapsules);
+			savePartyCapsules(newCapacity - party.getCapsulesSize(), party);
 		}
 	}
 

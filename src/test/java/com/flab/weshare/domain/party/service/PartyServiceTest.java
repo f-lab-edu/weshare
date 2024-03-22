@@ -121,7 +121,7 @@ class PartyServiceTest {
 
 		partyService.updatePartyDetails(modifyPartyRequest, 1L);
 
-		then(mockParty).should(times(1)).deleteEmptyCapsules(partyCapsuleSize - newCapacity);
+		then(mockParty).should(times(1)).deleteEmptyCapsules(newCapacity);
 		then(mockParty).should(times(1)).changePassword(passwordEncoder.encode(modifyPartyRequest.password()));
 		then(mockParty).should(times(1)).changeCapacity(modifyPartyRequest.capacity());
 		then(partyCapsuleRepository).should(never()).saveAll(anyCollection());

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.flab.weshare.domain.user.dto.SignUpRequest;
 import com.flab.weshare.domain.user.entity.User;
@@ -22,6 +23,9 @@ class UserServiceTest {
 
 	@Mock
 	UserRepository userRepository;
+
+	@Mock
+	PasswordEncoder passwordEncoder;
 
 	SignUpRequest signUpRequest = new SignUpRequest("test@email.com", "fffdfdf2@", "test", "01011111111");
 

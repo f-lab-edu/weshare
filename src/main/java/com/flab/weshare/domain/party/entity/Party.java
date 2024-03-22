@@ -86,15 +86,16 @@ public class Party extends BaseEntity {
 		this.ottAccountPassword = encodedPassword;
 	}
 
-	public void deleteEmptyCapsules(final int deleteTargetCount) {
-		int deleteChecks = deleteTargetCount;
+	public void deleteEmptyCapsules(final int newCapacity) {
+		if (this.partyCapsules.size() <= newCapacity) {
+			return;
+		}
 
 		for (PartyCapsule partyCapsule : this.partyCapsules) {
 			if (partyCapsule.getPartyCapsuleStatus().equals(PartyCapsuleStatus.EMPTY)) {
 				partyCapsule.deleteCapsule();
-				--deleteChecks;
 			}
-			if (deleteChecks == 0) {
+			if (this.partyCapsules.size() == newCapacity) {
 				return;
 			}
 		}

@@ -4,31 +4,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flab.weshare.domain.base.BaseControllerTest;
 import com.flab.weshare.domain.user.dto.SignUpRequest;
 
-@Transactional
-@SpringBootTest
-@AutoConfigureMockMvc
-class UserControllerTest {
-	@Autowired
-	MockMvc mockMvc;
-
-	@Autowired
-	ObjectMapper objectMapper;
-
+class UserControllerTest extends BaseControllerTest {
 	SignUpRequest signUpRequest = new SignUpRequest("test@email.com", "fffdfdf2@", "test", "01011111111");
 
 	@Test
 	void signup_test() throws Exception {
-		mockMvc.perform(post("/api/user")
+		mockMvc.perform(post("/api/v1/user")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(signUpRequest)))
 			.andExpect(status().isCreated());
