@@ -23,7 +23,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicUpdate
@@ -56,7 +58,7 @@ public class Party extends BaseEntity {
 	private PartyStatus partyStatus;
 
 	@OneToMany(mappedBy = "party")
-	private List<PartyMember> partyMembers = new ArrayList<>();
+	private List<PartyCapsule> partyCapsules = new ArrayList<>(); //EMPTY, OCCUPIED 상태의 PartyCapsule 만 존재.
 
 	@Builder
 	private Party(User leader, Ott ott, String ottAccountId, String ottAccountPassword, int capacity) {
@@ -72,11 +74,41 @@ public class Party extends BaseEntity {
 		this.capacity = capacity;
 	}
 
-	public boolean isChangeableCapacity(int capacity) {
-		return this.partyMembers.size() <= capacity - 1;
+	public int getCapsulesSize() {
+		return this.partyCapsules.size();
+	}
+
+	public int countOccupiedPartyCapsule() {
+		return (int)partyCapsules.stream()
+			.filter(pc -> pc.getPartyCapsuleStatus().equals(PartyCapsuleStatus.OCCUPIED))
+			.count();
 	}
 
 	public void changePassword(String encodedPassword) {
 		this.ottAccountPassword = encodedPassword;
+	}
+
+	public void deleteEmptyCapsules(final int newCapacity) {
+		log.debug("current Capusule size = {}", getCapsulesSize());
+		log.debug("current capacity = {}", this.capacity);
+		log.debug("current newCapacity = {}", newCapacity);
+
+		if (this.partyCapsules.size() <= newCapacity) {
+			return;
+		}
+
+		for (PartyCapsule partyCapsule : this.partyCapsules) {
+			if (partyCapsule.isEmptyCapsule()) {
+				partyCapsule.deleteCapsule();
+				this.partyCapsules.remove(partyCapsule);
+			}
+
+			log.debug("current partyCapsules Occupied = {}", countOccupiedPartyCapsule());
+			log.debug("current Capusule size = {}", getCapsulesSize());
+
+			if (this.partyCapsules.size() == newCapacity) {
+				return;
+			}
+		}
 	}
 }

@@ -21,10 +21,10 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class PartyMember extends BaseEntity {
+public class PartyCapsule extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "party_member_id")
+	@Column(name = "party_capsule_id")
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -36,12 +36,27 @@ public class PartyMember extends BaseEntity {
 	private Party party;
 
 	@Enumerated(value = EnumType.STRING)
-	private PartyMemberStatus partyMemberStatus;
+	private PartyCapsuleStatus partyCapsuleStatus;
 
 	@Builder
-	public PartyMember(User partyMember, Party party, PartyMemberStatus partyMemberStatus) {
+	private PartyCapsule(User partyMember, Party party, PartyCapsuleStatus partyCapsuleStatus) {
 		this.partyMember = partyMember;
 		this.party = party;
-		this.partyMemberStatus = PartyMemberStatus.ATTENDING;
+		this.partyCapsuleStatus = partyCapsuleStatus;
+	}
+
+	public static PartyCapsule makeEmptyCapsule(Party party) {
+		return PartyCapsule.builder()
+			.party(party)
+			.partyCapsuleStatus(PartyCapsuleStatus.EMPTY)
+			.build();
+	}
+
+	public boolean isEmptyCapsule() {
+		return this.partyCapsuleStatus.equals(PartyCapsuleStatus.EMPTY);
+	}
+
+	public void deleteCapsule() {
+		this.partyCapsuleStatus = PartyCapsuleStatus.DELETED;
 	}
 }

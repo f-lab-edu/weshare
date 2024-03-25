@@ -16,10 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flab.weshare.config.TestContainerConfig;
-import com.flab.weshare.domain.party.entity.PartyMember;
-import com.flab.weshare.domain.party.entity.PartyMemberStatus;
+import com.flab.weshare.domain.party.entity.PartyCapsule;
+import com.flab.weshare.domain.party.entity.PartyCapsuleStatus;
 import com.flab.weshare.domain.party.repository.OttRepository;
-import com.flab.weshare.domain.party.repository.PartyMemberRepository;
+import com.flab.weshare.domain.party.repository.PartyCapsuleRepository;
 import com.flab.weshare.domain.party.repository.PartyRepository;
 import com.flab.weshare.domain.user.entity.Role;
 import com.flab.weshare.domain.user.entity.User;
@@ -51,7 +51,7 @@ public abstract class BaseControllerTest {
 	protected PartyRepository partyRepository;
 
 	@Autowired
-	protected PartyMemberRepository partyMemberRepository;
+	protected PartyCapsuleRepository partyCapsuleRepository;
 
 	@Autowired
 	EntityManager entityManager;
@@ -77,28 +77,28 @@ public abstract class BaseControllerTest {
 		List<User> users = createUsers();
 		userRepository.saveAll(users);
 
-		List<PartyMember> partyMembers = createPartyMembers(users);
-		partyMemberRepository.saveAll(partyMembers);
+		List<PartyCapsule> partyCapsules = createPartyCapsules(users);
+		partyCapsuleRepository.saveAll(partyCapsules);
 
 		entityManager.clear();
 	}
 
-	private List<PartyMember> createPartyMembers(List<User> users) {
-		List<PartyMember> partyMembers = new ArrayList<>();
+	private List<PartyCapsule> createPartyCapsules(List<User> users) {
+		List<PartyCapsule> partyCapsules = new ArrayList<>();
 		for (int i = 0; i < 2; i++) {
-			PartyMember partyMember = PartyMember.builder()
+			PartyCapsule partyCapsule = PartyCapsule.builder()
 				.party(savedParty)
 				.partyMember(users.get(i))
-				.partyMemberStatus(PartyMemberStatus.ATTENDING)
+				.partyCapsuleStatus(PartyCapsuleStatus.OCCUPIED)
 				.build();
-			partyMembers.add(partyMember);
+			partyCapsules.add(partyCapsule);
 		}
-		return partyMembers;
+		return partyCapsules;
 	}
 
 	private List<User> createUsers() {
 		List<User> members = new ArrayList<>();
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < 3; i++) {
 			User build = User.builder()
 				.nickName(NICKNAME + i)
 				.email(EMAIL + i)
