@@ -23,7 +23,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicUpdate
@@ -87,14 +89,23 @@ public class Party extends BaseEntity {
 	}
 
 	public void deleteEmptyCapsules(final int newCapacity) {
+		log.debug("current Capusule size = {}", getCapsulesSize());
+		log.debug("current capacity = {}", this.capacity);
+		log.debug("current newCapacity = {}", newCapacity);
+
 		if (this.partyCapsules.size() <= newCapacity) {
 			return;
 		}
 
 		for (PartyCapsule partyCapsule : this.partyCapsules) {
-			if (partyCapsule.getPartyCapsuleStatus().equals(PartyCapsuleStatus.EMPTY)) {
+			if (partyCapsule.isEmptyCapsule()) {
 				partyCapsule.deleteCapsule();
+				this.partyCapsules.remove(partyCapsule);
 			}
+
+			log.debug("current partyCapsules Occupied = {}", countOccupiedPartyCapsule());
+			log.debug("current Capusule size = {}", getCapsulesSize());
+
 			if (this.partyCapsules.size() == newCapacity) {
 				return;
 			}

@@ -52,6 +52,10 @@ public class PartyCapsule extends BaseEntity {
 			.build();
 	}
 
+	public boolean isEmptyCapsule() {
+		return this.partyCapsuleStatus.equals(PartyCapsuleStatus.EMPTY);
+	}
+
 	public void deleteCapsule() {
 		this.partyCapsuleStatus = PartyCapsuleStatus.DELETED;
 	}
