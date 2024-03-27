@@ -3,6 +3,7 @@ package com.flab.weshare.domain.partyMatch.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.flab.weshare.domain.party.entity.Ott;
@@ -23,7 +24,7 @@ public class PartyMatchingService {
 	private final PartyCapsuleRepository partyCapsuleRepository;
 	private final PartyJoinRepository partyJoinRepository;
 
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void partyMatch(final Ott ott) {
 		List<PartyCapsule> partyCapsules = partyCapsuleRepository.findEmptyCapsuleByOtt(ott);
 		List<PartyJoin> partyJoins = partyJoinRepository.findWaitingPartyJoinByOtt(ott);
