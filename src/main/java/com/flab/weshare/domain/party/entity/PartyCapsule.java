@@ -59,4 +59,9 @@ public class PartyCapsule extends BaseEntity {
 	public void deleteCapsule() {
 		this.partyCapsuleStatus = PartyCapsuleStatus.DELETED;
 	}
+
+	public void occupy(final User user) {
+		this.partyMember = user;
+		this.partyCapsuleStatus = PartyCapsuleStatus.PRE_OCCUPIED;
+	}
 }

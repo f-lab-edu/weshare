@@ -129,15 +129,19 @@ public class PartyService {
 
 	@Transactional
 	public void joinParty(final PartyJoin partyJoin, final PartyCapsule partyCapsule) {
-		verifyWaitingPartyJoin(partyJoin);
-		verifyEmptyPartyCapsule(partyCapsule);
+		PartyJoin partyJoinPersist = partyJoinRepository.findByIdForUpdate(partyJoin.getId())
+			.orElseThrow(
+				() -> new IllegalArgumentException("partyJoin 엔티티가 존재하지 않음. partyJoinId = " + partyJoin.getId()));
 
-		PartyJoin partyJoinReference = partyJoinRepository.getReferenceById(partyJoin.getId());
-		User userReference = userRepository.getReferenceById(partyJoin.getUser().getId());
-		PartyCapsule partyCapsuleReference = partyCapsuleRepository.getReferenceById(partyCapsule.getId());
+		PartyCapsule partyCapsulePersist = partyCapsuleRepository.findByIdForUpdate(partyCapsule.getId())
+			.orElseThrow(
+				() -> new IllegalArgumentException("partyCapsule 엔티티가 존재하지 않음. partyCapsuleId = " + partyJoin.getId()));
 
-		partyCapsuleRepository.updatePartyCapusuleOccupy(userReference, partyCapsuleReference);
-		partyJoinRepository.updatePartyJoinPayWaiting(partyJoinReference);
+		verifyWaitingPartyJoin(partyJoinPersist);
+		verifyEmptyPartyCapsule(partyCapsulePersist);
+
+		partyCapsulePersist.occupy(partyJoin.getUser());
+		partyJoinPersist.changeStatusPayWaiting();
 	}
 
 	private void verifyEmptyPartyCapsule(PartyCapsule partyCapsule) {

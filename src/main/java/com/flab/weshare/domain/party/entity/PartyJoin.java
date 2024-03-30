@@ -56,4 +56,8 @@ public class PartyJoin extends BaseEntity {
 	public boolean isWaitingPartyJoin() {
 		return this.partyJoinStatus.equals(PartyJoinStatus.WAITING);
 	}
+
+	public void changeStatusPayWaiting() {
+		this.partyJoinStatus = PartyJoinStatus.PAY_WAITING;
+	}
 }
