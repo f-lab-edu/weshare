@@ -1,10 +1,10 @@
 package com.flab.weshare.domain.partyMatch.service;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.flab.weshare.domain.party.entity.Ott;
 import com.flab.weshare.domain.party.entity.PartyCapsule;
@@ -24,11 +24,10 @@ public class PartyMatchingService {
 	private final PartyCapsuleRepository partyCapsuleRepository;
 	private final PartyJoinRepository partyJoinRepository;
 
-	@Transactional(propagation = Propagation.REQUIRES_NEW)
-	public void partyMatch(final Ott ott) {
+	@Async
+	public CompletableFuture<Long> partyMatch(final Ott ott) {
 		List<PartyCapsule> partyCapsules = partyCapsuleRepository.findEmptyCapsuleByOtt(ott);
 		List<PartyJoin> partyJoins = partyJoinRepository.findWaitingPartyJoinByOtt(ott);
-
 		int countMatchable = Math.min(partyCapsules.size(), partyJoins.size());
 
 		for (int i = 0; i < countMatchable; i++) {
@@ -41,5 +40,6 @@ public class PartyMatchingService {
 				log.error("partyJoin id ={}, partyCapsuleId= {} ", partyJoin.getId(), partyCapsule.getId());
 			}
 		}
+		return CompletableFuture.completedFuture(ott.getId());
 	}
 }
