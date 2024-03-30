@@ -6,4 +6,5 @@ public enum PartyCapsuleStatus {
 	, WITHDRAWN //파티원이 파티에서 이탈
 	, DELETED //삭제됨
 	, CLOSED //파티가 닫힘으로 인해 종료.
+	, PRE_OCCUPIED
 }
