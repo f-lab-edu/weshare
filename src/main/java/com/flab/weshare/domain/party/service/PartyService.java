@@ -121,7 +121,7 @@ public class PartyService {
 		User partyParticipant = userRepository.getReferenceById(userId);
 		Ott selectedOtt = ottRepository.getReferenceById(PartyJoinRequest.ottId());
 
-		PartyJoin partyJoin = PartyJoin.genertaeWaitingPartyJoin(partyParticipant, selectedOtt);
+		PartyJoin partyJoin = PartyJoin.generateWaitingPartyJoin(partyParticipant, selectedOtt);
 		partyJoinRepository.save(partyJoin);
 
 		return partyJoin.getId();

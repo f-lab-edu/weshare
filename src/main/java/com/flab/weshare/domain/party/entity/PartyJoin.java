@@ -45,7 +45,7 @@ public class PartyJoin extends BaseEntity {
 		this.partyJoinStatus = partyJoinStatus;
 	}
 
-	public static PartyJoin genertaeWaitingPartyJoin(User user, Ott ott) {
+	public static PartyJoin generateWaitingPartyJoin(User user, Ott ott) {
 		return PartyJoin.builder()
 			.partyJoinStatus(PartyJoinStatus.WAITING)
 			.user(user)
