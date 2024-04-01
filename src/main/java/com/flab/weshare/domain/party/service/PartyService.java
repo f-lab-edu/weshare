@@ -121,13 +121,38 @@ public class PartyService {
 		User partyParticipant = userRepository.getReferenceById(userId);
 		Ott selectedOtt = ottRepository.getReferenceById(PartyJoinRequest.ottId());
 
-		PartyJoin partyJoin = PartyJoin.builder()
-			.ott(selectedOtt)
-			.user(partyParticipant)
-			.build();
-
+		PartyJoin partyJoin = PartyJoin.generateWaitingPartyJoin(partyParticipant, selectedOtt);
 		partyJoinRepository.save(partyJoin);
 
 		return partyJoin.getId();
+	}
+
+	@Transactional
+	public void joinParty(final PartyJoin partyJoin, final PartyCapsule partyCapsule) {
+		PartyJoin partyJoinPersist = partyJoinRepository.findByIdForUpdate(partyJoin.getId())
+			.orElseThrow(
+				() -> new IllegalArgumentException("partyJoin 엔티티가 존재하지 않음. partyJoinId = " + partyJoin.getId()));
+
+		PartyCapsule partyCapsulePersist = partyCapsuleRepository.findByIdForUpdate(partyCapsule.getId())
+			.orElseThrow(
+				() -> new IllegalArgumentException("partyCapsule 엔티티가 존재하지 않음. partyCapsuleId = " + partyJoin.getId()));
+
+		verifyWaitingPartyJoin(partyJoinPersist);
+		verifyEmptyPartyCapsule(partyCapsulePersist);
+
+		partyCapsulePersist.occupy(partyJoin.getUser());
+		partyJoinPersist.changeStatusPayWaiting();
+	}
+
+	private void verifyEmptyPartyCapsule(PartyCapsule partyCapsule) {
+		if (!partyCapsule.isEmptyCapsule()) {
+			throw new IllegalArgumentException("파티 캡슐의 상태가 빈 상태가 아닙니다.");
+		}
+	}
+
+	private void verifyWaitingPartyJoin(PartyJoin partyJoin) {
+		if (!partyJoin.isWaitingPartyJoin()) {
+			throw new IllegalArgumentException("파티 조인의 상태가 대기 상태가 아닙니다.");
+		}
 	}
 }
