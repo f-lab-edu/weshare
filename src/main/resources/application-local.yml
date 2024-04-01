@@ -2,4 +2,18 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
+    generate-ddl: false
+
+  sql:
+    init:
+      schema-locations: classpath:/sql/init.sql
+      mode: always
+
+async:
+  prefix: 'async-thread-'
+  corePoolSize: 20
+  maxPoolSize: 40
+  queueCapacity: 400
+  keepAliveSeconds: 30
+
