@@ -16,3 +16,11 @@ jwt:
   access_expiration_time: ${JWT_ACCESS_EXPIRATION_TIME}
   refresh_expiration_time: ${JWT_REFRESH_EXPIRATION_TIME}
   secret: ${JWT_SECRET}
+
+pay:
+  rest_application_id: ${REST_APPLICATION_ID}
+  private_key: ${PRIVATE_KEY}
+
+aes:
+  password: ${AES_PASSWORD}
+  salt: ${AES_SALT}
