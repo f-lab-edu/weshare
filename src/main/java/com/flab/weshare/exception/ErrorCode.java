@@ -22,6 +22,8 @@ public class ErrorCode {
 	public static final ErrorCode RESOURCE_NOT_FOUND = new ErrorCode("RESOURCE_NOT_FOUND", "리소스를 찾을 수 없습니다.");
 	public static final ErrorCode DATA_INTEGRITY_VIOLATION = new ErrorCode("DATA_INTEGRITY_VIOLATION",
 		"DB 오류가 발생했습니다.");
+	public static final ErrorCode FAIL_CARD_ENROLLMENT = new ErrorCode("FAIL_CARD_ENROLLMENT",
+		"카드 등록에 실패했습니다.");
 
 	private final String errorCode;
 	private final String errorMessage;
