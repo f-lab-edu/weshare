@@ -14,7 +14,7 @@ import com.flab.weshare.domain.pay.entity.PaymentStatus;
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 	@Query(value = "select distinct pm from Payment pm "
 		+ "join fetch pm.partyCapsule "
-		+ "join fetch pm.payResult "
+		+ "left join fetch pm.payResult "
 		+ "where pm.paymentStatus=:status"
 		, countQuery = "select count(pm) from Payment pm where pm.paymentStatus=:status")
 	Page<Payment> findFetchPagePaymentByStatus(@Param("status") PaymentStatus status, Pageable pageable);
