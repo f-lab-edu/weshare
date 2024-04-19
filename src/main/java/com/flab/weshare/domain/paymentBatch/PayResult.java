@@ -1,5 +1,8 @@
 package com.flab.weshare.domain.paymentBatch;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.flab.weshare.domain.pay.entity.Payment;
 
 import jakarta.persistence.Column;
@@ -20,12 +23,14 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class PayResult {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "pay_result_id")
 	private Long id;
 
+	@JsonIgnore
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "payment_id")
 	private Payment payment;
@@ -68,5 +73,21 @@ public class PayResult {
 			.errorMessage(errorMessage)
 			.payResultStatus(PayResultStatus.ERROR_OCCUR)
 			.build();
+	}
+
+	@JsonGetter("paymentId")
+	public String getPaymentId() {
+		return String.valueOf(this.getPayment().getId());
+	}
+
+	@Override
+	public String toString() {
+		return "PayResult{" +
+			"id=" + id +
+			", payment=" + payment.getId() +
+			", payResultStatus=" + payResultStatus +
+			", receipt='" + receipt + '\'' +
+			", errorMessage='" + errorMessage + '\'' +
+			'}';
 	}
 }
