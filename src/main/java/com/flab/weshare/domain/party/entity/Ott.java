@@ -4,6 +4,7 @@ import org.hibernate.annotations.Immutable;
 
 import com.flab.weshare.domain.base.Money;
 
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -27,6 +28,7 @@ public class Ott {
 	private String name;
 
 	@Embedded
+	@AttributeOverride(name = "amount", column = @Column(name = "per_day_price"))
 	private Money perDayPrice;
 
 	private int maximumCapacity;
