@@ -1,6 +1,6 @@
 package com.flab.weshare.domain.paymentBatch.job;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Collections;
 
 import org.springframework.batch.core.Step;
@@ -21,11 +21,11 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import com.flab.weshare.domain.base.Money;
 import com.flab.weshare.domain.party.entity.PartyCapsule;
-import com.flab.weshare.domain.party.entity.PartyCapsuleStatus;
 import com.flab.weshare.domain.party.repository.PartyCapsuleRepository;
 import com.flab.weshare.domain.pay.entity.Card;
 import com.flab.weshare.domain.pay.entity.Payment;
 import com.flab.weshare.domain.pay.repository.PaymentRepository;
+import com.flab.weshare.domain.paymentBatch.PayJobParameter;
 import com.flab.weshare.domain.paymentBatch.PriceCalculatePolicy;
 
 import lombok.RequiredArgsConstructor;
@@ -40,6 +40,7 @@ public class PublishPaymentStepConfiguration {
 	private final PartyCapsuleRepository partyCapsuleRepository;
 	private final PaymentRepository paymentRepository;
 	private final PriceCalculatePolicy priceCalculatePolicy;
+	private final PayJobParameter parameter;
 
 	@Bean
 	@JobScope
@@ -61,7 +62,7 @@ public class PublishPaymentStepConfiguration {
 			.repository(partyCapsuleRepository)
 			.methodName("findFetchPartyCapsuleByStatus")
 			.pageSize(CHUNKSIZE)
-			.arguments(PartyCapsuleStatus.OCCUPIED)
+			.arguments(parameter.getStatus())
 			.sorts(Collections.singletonMap("createdDate", Sort.Direction.ASC))
 			.name("occupiedPartyCapsuleItemReader")
 			.build();
@@ -71,18 +72,18 @@ public class PublishPaymentStepConfiguration {
 	@StepScope
 	public ItemProcessor<PartyCapsule, Payment> publishPaymentProcessor() {
 		return partyCapsule -> {
-			if (!partyCapsule.isNeededNewPayment(LocalDateTime.now()) || partyCapsule.isCancelReservation()) {
+			if (!partyCapsule.isNeededNewPayment(parameter.getPayJobDate()) || partyCapsule.isCancelReservation()) {
 				return null;
 			}
 			Card card = partyCapsule.getPartyMember().findAvailableCard();
-
 			Money perDayPrice = partyCapsule.getParty().getOtt().getPerDayPrice();
-
-			Money calculatePrice = priceCalculatePolicy.calculatePrice(LocalDateTime.now(),
-				partyCapsule.getExpirationDate(),
-				perDayPrice);
-			return Payment.generateEmptyPayment(partyCapsule, card, calculatePrice);
+			Money calculatePrice = getCalculatePrice(partyCapsule.getExpirationDate(), perDayPrice);
+			return Payment.generateEmptyPayment(partyCapsule, card, calculatePrice, parameter.getPayJobDate());
 		};
+	}
+
+	private Money getCalculatePrice(LocalDate expDate, Money perDayPrice) {
+		return priceCalculatePolicy.calculatePrice(expDate, parameter.getRenewExpirationDate(), perDayPrice);
 	}
 
 	@Bean
@@ -93,5 +94,4 @@ public class PublishPaymentStepConfiguration {
 			.methodName("save")
 			.build();
 	}
-
 }

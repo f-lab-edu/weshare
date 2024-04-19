@@ -1,6 +1,6 @@
 package com.flab.weshare.domain.party.entity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import com.flab.weshare.domain.base.BaseEntity;
 import com.flab.weshare.domain.user.entity.User;
@@ -43,7 +43,7 @@ public class PartyCapsule extends BaseEntity {
 	/**
 	 * 현재 파티캡슐 만료 날짜
 	 */
-	private LocalDateTime expirationDate;
+	private LocalDate expirationDate;
 
 	private boolean cancelReservation;
 
@@ -74,7 +74,7 @@ public class PartyCapsule extends BaseEntity {
 		this.partyCapsuleStatus = PartyCapsuleStatus.PRE_OCCUPIED;
 	}
 
-	public boolean isNeededNewPayment(LocalDateTime payDate) {
+	public boolean isNeededNewPayment(LocalDate payDate) {
 		return this.expirationDate.isBefore(payDate);
 	}
 
@@ -82,7 +82,7 @@ public class PartyCapsule extends BaseEntity {
 		this.partyCapsuleStatus = PartyCapsuleStatus.OCCUPIED;
 	}
 
-	public void changeExpirationDate(LocalDateTime localDateTime) {
-		this.expirationDate = localDateTime;
+	public void changeExpirationDate(LocalDate renewExpDate) {
+		this.expirationDate = renewExpDate;
 	}
 }

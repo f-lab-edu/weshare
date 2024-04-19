@@ -1,5 +1,7 @@
 package com.flab.weshare.domain.pay.entity;
 
+import java.time.LocalDate;
+
 import com.flab.weshare.domain.base.BaseEntity;
 import com.flab.weshare.domain.base.Money;
 import com.flab.weshare.domain.party.entity.PartyCapsule;
@@ -45,22 +47,29 @@ public class Payment extends BaseEntity {
 	@Embedded
 	private Money amount;
 
+	private LocalDate payDate;
+
 	@OneToOne(mappedBy = "payment")
 	private PayResult payResult;
 
 	@Builder
-	private Payment(Long id, PartyCapsule partyCapsule, Card card, PaymentStatus paymentStatus, Money amount) {
+	public Payment(Long id, PartyCapsule partyCapsule, Card card, PaymentStatus paymentStatus, Money amount,
+		LocalDate payDate, PayResult payResult) {
 		this.id = id;
 		this.partyCapsule = partyCapsule;
 		this.card = card;
 		this.paymentStatus = paymentStatus;
 		this.amount = amount;
+		this.payDate = payDate;
+		this.payResult = payResult;
 	}
 
-	public static Payment generateEmptyPayment(final PartyCapsule partyCapsule, final Card card, final Money amount) {
+	public static Payment generateEmptyPayment(final PartyCapsule partyCapsule, final Card card, final Money amount,
+		final LocalDate payDate) {
 		return Payment.builder()
 			.partyCapsule(partyCapsule)
 			.card(card)
+			.payDate(payDate)
 			.amount(amount)
 			.paymentStatus(PaymentStatus.WAITING)
 			.build();
