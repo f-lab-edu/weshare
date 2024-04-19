@@ -49,7 +49,7 @@ public class Payment extends BaseEntity {
 
 	private LocalDate payDate;
 
-	@OneToOne(mappedBy = "payment")
+	@OneToOne(mappedBy = "payment", fetch = FetchType.LAZY)
 	private PayResult payResult;
 
 	@Builder
