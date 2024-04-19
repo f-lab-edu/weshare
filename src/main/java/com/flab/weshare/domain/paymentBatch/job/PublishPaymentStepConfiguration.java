@@ -3,6 +3,7 @@ package com.flab.weshare.domain.paymentBatch.job;
 import java.time.LocalDate;
 import java.util.Collections;
 
+import org.springframework.batch.core.SkipListener;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -16,6 +17,7 @@ import org.springframework.batch.item.data.builder.RepositoryItemWriterBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -27,6 +29,8 @@ import com.flab.weshare.domain.pay.entity.Payment;
 import com.flab.weshare.domain.pay.repository.PaymentRepository;
 import com.flab.weshare.domain.paymentBatch.PayJobParameter;
 import com.flab.weshare.domain.paymentBatch.PriceCalculatePolicy;
+import com.flab.weshare.domain.paymentBatch.exception.PublishPaymentException;
+import com.flab.weshare.domain.paymentBatch.job.skiplistner.PublishPaymentSkipListener;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,12 +50,15 @@ public class PublishPaymentStepConfiguration {
 	@JobScope
 	public Step initialPayStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
 		return new StepBuilder("initialPayStep", jobRepository)
-			.<PartyCapsule, Payment>chunk(2, transactionManager)
+			.<PartyCapsule, Payment>chunk(CHUNKSIZE, transactionManager)
 			.reader(occupiedPartyCapsuleItemReader())
 			.processor(publishPaymentProcessor())
 			.writer(paymentRepositoryItemWriter())
 			.faultTolerant()
-			.processorNonTransactional()
+			.skip(PublishPaymentException.class)
+			.skip(DataAccessException.class)
+			.skipLimit(CHUNKSIZE + 50)
+			.listener(publishPaymentSkipListener())
 			.build();
 	}
 
@@ -93,5 +100,11 @@ public class PublishPaymentStepConfiguration {
 			.repository(paymentRepository)
 			.methodName("save")
 			.build();
+	}
+
+	@Bean
+	@StepScope
+	public SkipListener<PartyCapsule, Payment> publishPaymentSkipListener() {
+		return new PublishPaymentSkipListener();
 	}
 }
