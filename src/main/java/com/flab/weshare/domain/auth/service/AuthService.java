@@ -56,7 +56,7 @@ public class AuthService {
 
 	private void validateRefreshToken(JwtAuthentication jwtAuthentication) {
 		String savedRefreshToken = Optional.ofNullable(
-				redisTemplate.opsForValue().get(String.valueOf(jwtAuthentication.getId())))
+				redisTemplate.opsForValue().getAndDelete(String.valueOf(jwtAuthentication.getId())))
 			.orElseThrow(() -> new CommonClientException(ErrorCode.INVALID_REFRESH_TOKEN));
 
 		if (!savedRefreshToken.equals(jwtAuthentication.getToken())) {
@@ -68,16 +68,20 @@ public class AuthService {
 		String accessToken = jwtUtil.createAccessToken(userId);
 		String refreshToken = jwtUtil.createRefreshToken(userId);
 
+		setRefreshToken(userId, refreshToken);
+
+		return LoginResponse.builder()
+			.accessToken(accessToken)
+			.refreshToken(refreshToken)
+			.build();
+	}
+
+	private void setRefreshToken(Long userId, String refreshToken) {
 		redisTemplate.opsForValue().set(
 			String.valueOf(userId),
 			refreshToken,
 			refreshTokenExpirationTime,
 			TimeUnit.MILLISECONDS
 		);
-
-		return LoginResponse.builder()
-			.accessToken(accessToken)
-			.refreshToken(refreshToken)
-			.build();
 	}
 }
