@@ -38,8 +38,9 @@ public class PaymentJobConfiguration {
 	@Bean
 	@JobScope
 	public PayResultCacheFileManager payResultCacheFileManager(@Value("${batch.pay.savepath}") String jsonSavePath,
+		@Value("${batch.pay.cachesize}") Integer cacheSize,
 		@Value("#{jobParameters[payDate]}") LocalDate payJobDate) {
-		return new PayResultCacheFileManager(jsonSavePath, 2, payJobDate, objectMapper);
+		return new PayResultCacheFileManager(jsonSavePath, cacheSize, payJobDate, objectMapper);
 	}
 
 	@Bean
