@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -28,6 +29,8 @@ import com.flab.weshare.domain.pay.repository.PaymentRepository;
 import com.flab.weshare.domain.pay.service.CardService;
 import com.flab.weshare.domain.paymentBatch.PayResult;
 import com.flab.weshare.domain.paymentBatch.PayResultRepository;
+import com.flab.weshare.domain.paymentBatch.job.skiplistner.ExecutePaymentItemListener;
+import com.flab.weshare.domain.paymentBatch.job.skiplistner.ExecutePaymentSkipListener;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,27 +44,29 @@ public class ExecutePaymentStepConfiguration {
 	private final PayResultRepository payResultRepository;
 	private final PaymentRepository paymentRepository;
 	private final CardService cardService;
+	private final PayResultCacheFileManager payResultCacheFileManager;
 
 	@Bean
 	@JobScope
 	public Step payStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
-		return new StepBuilder("payStep", jobRepository)
-			.<Payment, Future<PayResult>>chunk(CHUNKSIZE, transactionManager)
+		return new StepBuilder("payStep", jobRepository).<Payment, Future<PayResult>>chunk(CHUNKSIZE,
+				transactionManager)
 			.reader(waitingPaymentItemReader())
 			.processor(asyncItemProcessor())
 			.writer(asyncItemWriter())
 			.faultTolerant()
 			.processorNonTransactional()
-			.skip(Exception.class)
-			.skipLimit(2)
+			.skip(DataAccessException.class)
+			.skipLimit(Integer.MAX_VALUE)
+			.listener(executePaymentSkipListener())
+			.listener(executePaymentItemListener())
 			.build();
 	}
 
 	@Bean
 	@StepScope
 	public RepositoryItemReader<Payment> waitingPaymentItemReader() {
-		return new RepositoryItemReaderBuilder<Payment>()
-			.name("waitingPaymentItemReader")
+		return new RepositoryItemReaderBuilder<Payment>().name("waitingPaymentItemReader")
 			.repository(paymentRepository)
 			.methodName("findFetchPagePaymentByStatus")
 			.arguments(PaymentStatus.WAITING)
@@ -83,7 +88,7 @@ public class ExecutePaymentStepConfiguration {
 	@StepScope
 	public ItemProcessor<Payment, PayResult> delegateProcessor() {
 		return payment -> {
-			log.info("결제요청 processor {}번 payment", payment.getId());
+			log.info("payment 결제요청 {}", payment.getId());
 			return cardService.payRequest(payment);
 		};
 	}
@@ -99,9 +104,18 @@ public class ExecutePaymentStepConfiguration {
 	@Bean
 	@StepScope
 	public RepositoryItemWriter<PayResult> delegateWriter() {
-		return new RepositoryItemWriterBuilder<PayResult>()
-			.repository(payResultRepository)
-			.methodName("save")
-			.build();
+		return new RepositoryItemWriterBuilder<PayResult>().repository(payResultRepository).methodName("save").build();
+	}
+
+	@Bean
+	@StepScope
+	public ExecutePaymentSkipListener executePaymentSkipListener() {
+		return new ExecutePaymentSkipListener(payResultCacheFileManager);
+	}
+
+	@Bean
+	@StepScope
+	public ExecutePaymentItemListener executePaymentItemListener() {
+		return new ExecutePaymentItemListener(payResultCacheFileManager);
 	}
 }

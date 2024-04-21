@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flab.weshare.domain.party.entity.PartyCapsuleStatus;
 import com.flab.weshare.domain.paymentBatch.PayJobParameter;
 
@@ -24,6 +25,7 @@ public class PaymentJobConfiguration {
 	private final PublishPaymentStepConfiguration publishPaymentStepConfiguration;
 	private final ExecutePaymentStepConfiguration executePaymentStepConfiguration;
 	private final UpdatePayResultStepConfiguration updatePayResultStepConfiguration;
+	private final ObjectMapper objectMapper;
 
 	@Bean
 	@JobScope
@@ -31,6 +33,13 @@ public class PaymentJobConfiguration {
 		@Value("#{jobParameters[renewExpirationDate]}") LocalDate renewExpirationDate,
 		@Value("#{jobParameters[targetPartyCapsuleStatus]}") PartyCapsuleStatus status) {
 		return new PayJobParameter(payJobDate, renewExpirationDate, status);
+	}
+
+	@Bean
+	@JobScope
+	public PayResultCacheFileManager payResultCacheFileManager(@Value("${batch.pay.savepath}") String jsonSavePath,
+		@Value("#{jobParameters[payDate]}") LocalDate payJobDate) {
+		return new PayResultCacheFileManager(jsonSavePath, 2, payJobDate, objectMapper);
 	}
 
 	@Bean

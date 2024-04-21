@@ -1,6 +1,5 @@
 package com.flab.weshare.domain.paymentBatch.job;
 
-import java.time.LocalDate;
 import java.util.Collections;
 
 import org.springframework.batch.core.Step;
@@ -53,7 +52,7 @@ public class UpdatePayResultStepConfiguration {
 			.repository(paymentRepository)
 			.methodName("findFetchPagePaymentByPayDate")
 			.pageSize(CHUNKSIZE)
-			.arguments(LocalDate.now())
+			.arguments(parameter.getPayJobDate())
 			.sorts(Collections.singletonMap("createdDate", Sort.Direction.ASC))
 			.name("targetPaymentReader")
 			.build();
