@@ -6,7 +6,6 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.data.RepositoryItemReader;
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
@@ -17,7 +16,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import com.flab.weshare.domain.pay.entity.Payment;
-import com.flab.weshare.domain.pay.entity.PaymentStatus;
 import com.flab.weshare.domain.pay.repository.PaymentRepository;
 import com.flab.weshare.domain.paymentBatch.PayJobParameter;
 import com.flab.weshare.domain.paymentBatch.PayResultStatus;
@@ -39,7 +37,6 @@ public class UpdatePayResultStepConfiguration {
 		return new StepBuilder("updatePayResultStep", jobRepository)
 			.<Payment, Payment>chunk(CHUNKSIZE, transactionManager)
 			.reader(targetPaymentReader())
-			.processor(filterProcessor())
 			.writer(updateItemWriter())
 			.faultTolerant()
 			.build();
@@ -60,27 +57,13 @@ public class UpdatePayResultStepConfiguration {
 
 	@Bean
 	@StepScope
-	public ItemProcessor<Payment, Payment> filterProcessor() {
-		return payment -> {
-			if (!payment.getPaymentStatus().equals(PaymentStatus.WAITING)) {
-				return null;
-			}
-			return payment;
-		};
-	}
-
-	@Bean
-	@StepScope
 	public ItemWriter<Payment> updateItemWriter() {
 		return payments -> {
 			payments.forEach(payment -> {
 				if (payment.getPayResult().getPayResultStatus().equals(PayResultStatus.SUCCESS)) {
-					payment.updatePayResultStatus(PaymentStatus.SUCCESS);
 					payment.getPartyCapsule().changeExpirationDate(parameter.getRenewExpirationDate());
 				} else if (payment.getPayResult().getPayResultStatus().equals(PayResultStatus.PAY_REJECTED)) {
-					payment.updatePayResultStatus(PaymentStatus.FAILED);
-				} else if (payment.getPayResult().getPayResultStatus().equals(PayResultStatus.ERROR_OCCUR)) {
-					payment.updatePayResultStatus(PaymentStatus.TECHNICAL_ERROR);
+					//서비스 만료 프로세스 진행
 				}
 			});
 		};

@@ -10,8 +10,6 @@ import com.flab.weshare.domain.paymentBatch.PayResult;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -41,9 +39,6 @@ public class Payment extends BaseEntity {
 	@JoinColumn(name = "card_id")
 	private Card card;
 
-	@Enumerated(EnumType.STRING)
-	private PaymentStatus paymentStatus;
-
 	@Embedded
 	private Money amount;
 
@@ -53,12 +48,11 @@ public class Payment extends BaseEntity {
 	private PayResult payResult;
 
 	@Builder
-	public Payment(Long id, PartyCapsule partyCapsule, Card card, PaymentStatus paymentStatus, Money amount,
+	public Payment(Long id, PartyCapsule partyCapsule, Card card, Money amount,
 		LocalDate payDate, PayResult payResult) {
 		this.id = id;
 		this.partyCapsule = partyCapsule;
 		this.card = card;
-		this.paymentStatus = paymentStatus;
 		this.amount = amount;
 		this.payDate = payDate;
 		this.payResult = payResult;
@@ -71,11 +65,6 @@ public class Payment extends BaseEntity {
 			.card(card)
 			.payDate(payDate)
 			.amount(amount)
-			.paymentStatus(PaymentStatus.WAITING)
 			.build();
-	}
-
-	public void updatePayResultStatus(final PaymentStatus paymentStatus) {
-		this.paymentStatus = paymentStatus;
 	}
 }
