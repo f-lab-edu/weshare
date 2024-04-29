@@ -1,6 +1,12 @@
 package com.flab.weshare.domain.user.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.annotations.BatchSize;
+
 import com.flab.weshare.domain.base.BaseEntity;
+import com.flab.weshare.domain.pay.entity.Card;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,6 +15,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -29,6 +36,10 @@ public class User extends BaseEntity {
 	private String nickName;
 	private String telephone;
 
+	@BatchSize(size = 10)
+	@OneToMany(mappedBy = "user")
+	private List<Card> cards = new ArrayList<>();
+
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
@@ -39,5 +50,12 @@ public class User extends BaseEntity {
 		this.nickName = nickName;
 		this.telephone = telephone;
 		this.role = role;
+	}
+
+	public Card findAvailableCard() {
+		return this.cards.stream()
+			.filter(Card::isAvailable)
+			.findAny()
+			.orElseThrow(() -> new RuntimeException("사용가능한 카드가 없습니다."));
 	}
 }
