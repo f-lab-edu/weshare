@@ -47,4 +47,12 @@ public interface PartyCapsuleRepository extends JpaRepository<PartyCapsule, Long
 		+ "where pc in :partyCapsules")
 	void updateAllExpirationDate(@Param("expirationDate") LocalDateTime expirationDate,
 		@Param("partyCapsules") List<PartyCapsule> partyCapsules);
+
+	@Query(value = "select pc "
+		+ "from PartyCapsule pc "
+		+ "join fetch pc.party pcp "
+		+ "join fetch pcp.ott "
+		+ "join fetch pc.partyMember pm "
+		+ "where pc.id =:partyCapsuleId")
+	Optional<PartyCapsule> findByIdForFetchAll(@Param("partyCapsuleId") Long partyCapsuleId);
 }

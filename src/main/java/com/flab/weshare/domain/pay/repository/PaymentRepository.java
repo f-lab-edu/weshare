@@ -15,8 +15,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 	@Query(value = "select distinct pm from Payment pm "
 		+ "join fetch pm.partyCapsule "
 		+ "left outer join fetch pm.payResult "
-		+ "where pm.payResult is null"
-		, countQuery = "select count(pm) from Payment pm where pm.payResult is null")
+		, countQuery = "select count(pm) from Payment pm ")
 	Page<Payment> findFetchPagePaymentByStatus(@Param("status") PaymentStatus status, Pageable pageable);
 
 	@Query(value = "select distinct pm from Payment pm "
