@@ -10,6 +10,6 @@ import lombok.ToString;
 @RequiredArgsConstructor
 @ToString
 public class JoinPaidEvent {
-	private final Long PartyCapsuleId; //파티 가입후 첫 결제를 수행한 파티 캡슐의 id
+	private final Long PartyCapsuleId;
 	private final Money paidAmount;
 }
