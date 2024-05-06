@@ -35,7 +35,7 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     implementation 'org.springframework.batch:spring-batch-integration'
-
+    implementation 'org.springframework.boot:spring-boot-starter-hateoas:2.6.6'
     testImplementation 'org.projectlombok:lombok'
 
     annotationProcessor 'org.projectlombok:lombok'
