@@ -7,12 +7,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.flab.weshare.domain.party.dto.LeadingPartySummary;
 import com.flab.weshare.domain.party.dto.ModifyPartyRequest;
+import com.flab.weshare.domain.party.dto.ParticipatedPartyDto;
+import com.flab.weshare.domain.party.dto.ParticipatingPartySummary;
+import com.flab.weshare.domain.party.dto.PartyCapsuleInfo;
 import com.flab.weshare.domain.party.dto.PartyCreationRequest;
+import com.flab.weshare.domain.party.dto.PartyInfo;
 import com.flab.weshare.domain.party.dto.PartyJoinRequest;
 import com.flab.weshare.domain.party.entity.Ott;
 import com.flab.weshare.domain.party.entity.Party;
 import com.flab.weshare.domain.party.entity.PartyCapsule;
+import com.flab.weshare.domain.party.entity.PartyCapsuleStatus;
 import com.flab.weshare.domain.party.entity.PartyJoin;
 import com.flab.weshare.domain.party.repository.OttRepository;
 import com.flab.weshare.domain.party.repository.PartyCapsuleRepository;
@@ -22,6 +28,8 @@ import com.flab.weshare.domain.user.entity.User;
 import com.flab.weshare.domain.user.repository.UserRepository;
 import com.flab.weshare.exception.ErrorCode;
 import com.flab.weshare.exception.exceptions.CommonClientException;
+import com.flab.weshare.exception.exceptions.CommonNotFoundException;
+import com.flab.weshare.exception.exceptions.UnsatisfiedAuthorityException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -153,6 +161,46 @@ public class PartyService {
 	private void verifyWaitingPartyJoin(PartyJoin partyJoin) {
 		if (!partyJoin.isWaitingPartyJoin()) {
 			throw new IllegalArgumentException("파티 조인의 상태가 대기 상태가 아닙니다.");
+		}
+	}
+
+	@Transactional(readOnly = true)
+	public ParticipatedPartyDto findAllParticipatedParties(final Long userId) {
+		log.info("userId {}", userId);
+		User referenceById = userRepository.getReferenceById(userId);
+		List<LeadingPartySummary> leadingPartySummaries = partyRepository.findByUserIdWithOtt(referenceById)
+			.stream()
+			.map(LeadingPartySummary::of)
+			.toList();
+
+		List<ParticipatingPartySummary> participatingPartySummaries = partyCapsuleRepository.findAllPartyCapsulesUserId(
+				PartyCapsuleStatus.OCCUPIED, referenceById)
+			.stream().map(ParticipatingPartySummary::of)
+			.toList();
+
+		return new ParticipatedPartyDto(leadingPartySummaries, participatingPartySummaries);
+	}
+
+	@Transactional(readOnly = true)
+	public PartyInfo getPartyInfo(Long partyId, Long userId) {
+		Party party = partyRepository.findFetchByPartyId(partyId)
+			.orElseThrow(() -> new CommonNotFoundException(ErrorCode.makeSpecificResourceNotFoundErrorCode("party ")));
+		checkAuthority(userId, party.getLeader().getId());
+		return PartyInfo.of(party);
+	}
+
+	@Transactional(readOnly = true)
+	public PartyCapsuleInfo getPartyCapsuleInfo(Long partyCapsuleId, Long userId) {
+		PartyCapsule partyCapsule = partyCapsuleRepository.findPartyCapsuleById(partyCapsuleId)
+			.orElseThrow(
+				() -> new CommonNotFoundException(ErrorCode.makeSpecificResourceNotFoundErrorCode("partyCapsule ")));
+		checkAuthority(userId, partyCapsule.getPartyMember().getId());
+		return PartyCapsuleInfo.of(partyCapsule);
+	}
+
+	private void checkAuthority(Long userId, Long targetId) {
+		if (!userId.equals(targetId)) {
+			throw new UnsatisfiedAuthorityException(ErrorCode.INSUFFICIENT_AUTHORITY);
 		}
 	}
 }
