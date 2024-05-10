@@ -24,6 +24,8 @@ public class ErrorCode {
 		"DB 오류가 발생했습니다.");
 	public static final ErrorCode FAIL_CARD_ENROLLMENT = new ErrorCode("FAIL_CARD_ENROLLMENT",
 		"카드 등록에 실패했습니다.");
+	public static final ErrorCode INSUFFICIENT_AUTHORITY = new ErrorCode("INSUFFICIENT_AUTHORITY",
+		"권한이 부족한 요청입니다.");
 
 	private final String errorCode;
 	private final String errorMessage;

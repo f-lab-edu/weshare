@@ -13,6 +13,8 @@ import com.flab.weshare.domain.base.BaseResponse;
 import com.flab.weshare.domain.base.ErrorResponse;
 import com.flab.weshare.exception.ErrorCode;
 import com.flab.weshare.exception.exceptions.CommonClientException;
+import com.flab.weshare.exception.exceptions.CommonNotFoundException;
+import com.flab.weshare.exception.exceptions.UnsatisfiedAuthorityException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,6 +40,18 @@ public class ControllerAdvice {
 	public BaseResponse commonExceptionHandler(CommonClientException commonClientException) {
 		log.error("exception :", commonClientException);
 		return BaseResponse.fail(ErrorResponse.of(commonClientException.getErrorCode()));
+	}
+
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	@ExceptionHandler(CommonNotFoundException.class)
+	public BaseResponse commonNotFoundException(CommonNotFoundException commonNotFoundException) {
+		return BaseResponse.fail(ErrorResponse.of(commonNotFoundException.getErrorCode()));
+	}
+
+	@ResponseStatus(HttpStatus.FORBIDDEN)
+	@ExceptionHandler(UnsatisfiedAuthorityException.class)
+	public BaseResponse commonNotFoundException(UnsatisfiedAuthorityException commonNotFoundException) {
+		return BaseResponse.fail(ErrorResponse.of(commonNotFoundException.getErrorCode()));
 	}
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
