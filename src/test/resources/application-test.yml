@@ -5,14 +5,37 @@ spring:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
     url: jdbc:tc:mysql:8:///
 
+  batch:
+    job:
+      name: ${job.name:NONE}
+      enabled: false
+    jdbc:
+      initialize-schema: always
   jpa:
     open-in-view: false
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
     hibernate:
-      ddl-auto: create
-    database-platform: org.hibernate.dialect.MySQLDialect
+      ddl-auto: none
+    generate-ddl: false
+
+  sql:
+    init:
+      schema-locations: classpath:/sql/init.sql
+      mode: always
+
+async:
+  prefix: 'async-thread-'
+  corePoolSize: 20
+  maxPoolSize: 40
+  queueCapacity: 400
+  keepAliveSeconds: 30
 
 jwt:
   access_expiration_time: ${JWT_ACCESS_EXPIRATION_TIME}
   refresh_expiration_time: ${JWT_REFRESH_EXPIRATION_TIME}
   secret: ${JWT_SECRET}
 
+pay:
+  rest_application_id: ${REST_APPLICATION_ID}
+  private_key: ${PRIVATE_KEY}
