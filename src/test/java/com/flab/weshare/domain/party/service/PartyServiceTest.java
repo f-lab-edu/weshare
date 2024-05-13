@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.flab.weshare.domain.party.dto.ModifyPartyRequest;
+import com.flab.weshare.domain.party.dto.ParticipatedPartyDto;
 import com.flab.weshare.domain.party.dto.PartyCreationRequest;
 import com.flab.weshare.domain.party.entity.Party;
 import com.flab.weshare.domain.party.entity.PartyCapsule;
@@ -25,9 +26,12 @@ import com.flab.weshare.domain.party.entity.PartyCapsuleStatus;
 import com.flab.weshare.domain.party.repository.OttRepository;
 import com.flab.weshare.domain.party.repository.PartyCapsuleRepository;
 import com.flab.weshare.domain.party.repository.PartyRepository;
+import com.flab.weshare.domain.user.entity.User;
 import com.flab.weshare.domain.user.repository.UserRepository;
 import com.flab.weshare.exception.ErrorCode;
 import com.flab.weshare.exception.exceptions.CommonClientException;
+import com.flab.weshare.exception.exceptions.CommonNotFoundException;
+import com.flab.weshare.exception.exceptions.UnsatisfiedAuthorityException;
 
 @ExtendWith(MockitoExtension.class)
 class PartyServiceTest {
@@ -51,6 +55,12 @@ class PartyServiceTest {
 
 	@Mock
 	private Party mockParty;
+
+	@Mock
+	private PartyCapsule mockPartyCapsule;
+
+	@Mock
+	private User mockUser;
 
 	@DisplayName("유효한 파티 생성 요청일 시 파티와 빈 파티 캡슐을 정원 만큼 생성하며 데이터베이스 저장한다.")
 	@Test
@@ -159,7 +169,6 @@ class PartyServiceTest {
 	@Test
 	void update_party_fail() {
 		int newCapacity = 2;
-		int partyCapsuleSize = 3;
 		int occupiedCapsuleCount = 3;
 
 		ModifyPartyRequest modifyPartyRequest = new ModifyPartyRequest(newCapacity, PASSWORD);
@@ -172,5 +181,81 @@ class PartyServiceTest {
 			.isInstanceOf(CommonClientException.class)
 			.extracting("errorCode")
 			.isEqualTo(ErrorCode.INSUFFICIENT_CAPACITY);
+	}
+
+	@DisplayName("주어진 유저와 관련된 어떠한 파티가 존재하지 않더라도 dto를 성공적으로 반환할 수 있다.")
+	@Test
+	void findAllParticipatedParties_success() {
+		Long userId = 1L;
+
+		given(userRepository.getReferenceById(anyLong())).willReturn(mockUser);
+		given(partyRepository.findByUserIdWithOtt(mockUser)).willReturn(List.of());
+		given(partyCapsuleRepository.findAllPartyCapsulesUserId(PartyCapsuleStatus.OCCUPIED, mockUser)).willReturn(
+			List.of());
+
+		ParticipatedPartyDto allParticipatedParties = partyService.findAllParticipatedParties(userId);
+
+		assertThat(allParticipatedParties).extracting("leadingParties").asList().hasSize(0);
+		assertThat(allParticipatedParties).extracting("participatingParties").asList().hasSize(0);
+	}
+
+	@DisplayName("주어진 partyId를 조회하지 못할시 CommonNotFoundException 예외를 반환한다.")
+	@Test
+	void getPartyInfo_fail_resource_not_found() {
+		Long userId = 1L;
+		Long partyId = 1L;
+
+		given(partyRepository.findFetchByPartyId(anyLong())).willReturn(Optional.empty());
+
+		assertThatThrownBy(() -> partyService.getPartyInfo(partyId, userId))
+			.isInstanceOf(CommonNotFoundException.class)
+			.extracting("errorCode")
+			.hasFieldOrPropertyWithValue("errorMessage", "party 리소스를 찾을 수 없습니다.");
+	}
+
+	@DisplayName("조회 하고자하는 파티의 소유주가 조회를 요청한 파티의 유저와 다를 시 UnsatisfiedAuthorityException을 반환한다.")
+	@Test
+	void getPartyInfo_fail_INSUFFICIENT_AUTHORITY() {
+		Long userId = 1L;
+		Long partyId = 1L;
+
+		given(partyRepository.findFetchByPartyId(anyLong())).willReturn(Optional.of(mockParty));
+		given(mockParty.getLeader()).willReturn(mockUser);
+		given(mockUser.getId()).willReturn(userId + 1L);
+
+		assertThatThrownBy(() -> partyService.getPartyInfo(partyId, userId))
+			.isInstanceOf(UnsatisfiedAuthorityException.class)
+			.extracting("errorCode")
+			.isEqualTo(ErrorCode.INSUFFICIENT_AUTHORITY);
+	}
+
+	@DisplayName("주어진 partyCapsuleId를 조회하지 못할시 CommonNotFoundException 예외를 반환한다.")
+	@Test
+	void getPartyCapsuleInfo_fail_resource_not_found() {
+		Long userId = 1L;
+		Long partyCapsuleId = 1L;
+
+		given(partyCapsuleRepository.findPartyCapsuleById(anyLong())).willReturn(Optional.empty());
+
+		assertThatThrownBy(() -> partyService.getPartyCapsuleInfo(partyCapsuleId, userId))
+			.isInstanceOf(CommonNotFoundException.class)
+			.extracting("errorCode")
+			.hasFieldOrPropertyWithValue("errorMessage", "partyCapsule 리소스를 찾을 수 없습니다.");
+	}
+
+	@DisplayName("조회 하고자하는 파티 캡슐의 소유주가 조회를 요청한 파티의 유저와 다를 시 UnsatisfiedAuthorityException을 반환한다.")
+	@Test
+	void getPartyCapsuleInfo_fail_INSUFFICIENT_AUTHORITY() {
+		Long userId = 1L;
+		Long partyId = 1L;
+
+		given(partyCapsuleRepository.findPartyCapsuleById(anyLong())).willReturn(Optional.of(mockPartyCapsule));
+		given(mockPartyCapsule.getPartyMember()).willReturn(mockUser);
+		given(mockUser.getId()).willReturn(userId + 1L);
+
+		assertThatThrownBy(() -> partyService.getPartyCapsuleInfo(partyId, userId))
+			.isInstanceOf(UnsatisfiedAuthorityException.class)
+			.extracting("errorCode")
+			.isEqualTo(ErrorCode.INSUFFICIENT_AUTHORITY);
 	}
 }
