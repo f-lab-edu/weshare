@@ -27,7 +27,7 @@
 
 ## 4. 인프라
 
-<img src = "https://github.com/f-lab-edu/weshare/assets/105799662/bc404e16-b45b-4f92-bfd0-c69694faa7ee">
+![infra](/infra.webp)
 
 
 
