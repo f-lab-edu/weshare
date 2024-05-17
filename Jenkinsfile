@@ -4,7 +4,8 @@ pipeline {
     stages {
         stage('github-clone') {
             steps {
-                git branch: 'main', credentialsId: 'github-token', url: '{REPOSITORY URL}'
+                def branchName = env.GIT_BRANCH
+                git branch: branchName, credentialsId: 'github-token', url: '{REPOSITORY URL}'
             }
         }
     }
