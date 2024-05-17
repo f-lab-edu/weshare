@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     stages {
-        stage('github-clone') {
+        // Checkout Git repository
+        stage('Checkout Git') {
             steps {
-                def branchName = env.GIT_BRANCH
-                git branch: branchName, credentialsId: 'github-token', url: '{REPOSITORY URL}'
-                echo "Checking out branch:"
+                checkout scm
+                echo 'Git Checkout Success!'
             }
         }
     }
