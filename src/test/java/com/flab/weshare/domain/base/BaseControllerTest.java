@@ -2,6 +2,7 @@ package com.flab.weshare.domain.base;
 
 import static com.flab.weshare.domain.utils.TestUtil.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,7 +58,7 @@ public abstract class BaseControllerTest {
 	EntityManager entityManager;
 
 	@Autowired
-	JwtUtil jwtUtil;
+	protected JwtUtil jwtUtil;
 
 	protected String ACCESS_TOKEN;
 	protected String REFRESH_TOKEN;
@@ -77,9 +78,17 @@ public abstract class BaseControllerTest {
 		List<User> users = createUsers();
 		userRepository.saveAll(users);
 
+		PartyCapsule partyCapsule = PartyCapsule.builder()
+			.party(partyRepository.getReferenceById(2L))
+			.partyMember(savedUser)
+			.partyCapsuleStatus(PartyCapsuleStatus.OCCUPIED)
+			.joinDate(LocalDate.now())
+			.build();
+		partyCapsuleRepository.save(partyCapsule);
 		List<PartyCapsule> partyCapsules = createPartyCapsules(users);
 		partyCapsuleRepository.saveAll(partyCapsules);
 
+		entityManager.flush();
 		entityManager.clear();
 	}
 
@@ -90,6 +99,7 @@ public abstract class BaseControllerTest {
 				.party(savedParty)
 				.partyMember(users.get(i))
 				.partyCapsuleStatus(PartyCapsuleStatus.OCCUPIED)
+				.joinDate(LocalDate.now())
 				.build();
 			partyCapsules.add(partyCapsule);
 		}

@@ -15,6 +15,7 @@ import org.springframework.data.repository.query.Param;
 import com.flab.weshare.domain.party.entity.Ott;
 import com.flab.weshare.domain.party.entity.PartyCapsule;
 import com.flab.weshare.domain.party.entity.PartyCapsuleStatus;
+import com.flab.weshare.domain.user.entity.User;
 
 import jakarta.persistence.LockModeType;
 
@@ -52,6 +53,16 @@ public interface PartyCapsuleRepository extends JpaRepository<PartyCapsule, Long
 		+ "from PartyCapsule pc "
 		+ "join fetch pc.party pcp "
 		+ "join fetch pcp.ott "
+		+ "where pc.partyMember =:user and pc.partyCapsuleStatus =:status")
+	List<PartyCapsule> findAllPartyCapsulesUserId(@Param("status") PartyCapsuleStatus partyCapsuleStatus,
+		@Param("user") User user);
+
+	@Query(value = "select pc "
+		+ "from PartyCapsule pc "
+		+ "join fetch pc.party pcp "
+		+ "join fetch pcp.ott "
+		+ "where pc.id =:id")
+	Optional<PartyCapsule> findPartyCapsuleById(@Param("id") Long partyCapsuleId);
 		+ "join fetch pc.partyMember pm "
 		+ "where pc.id =:partyCapsuleId")
 	Optional<PartyCapsule> findByIdForFetchAll(@Param("partyCapsuleId") Long partyCapsuleId);

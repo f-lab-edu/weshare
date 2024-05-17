@@ -2,8 +2,10 @@ package com.flab.weshare.domain.utils;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.flab.weshare.domain.base.Money;
 import com.flab.weshare.domain.party.entity.Ott;
 import com.flab.weshare.domain.party.entity.Party;
+import com.flab.weshare.domain.user.entity.Role;
 import com.flab.weshare.domain.user.entity.User;
 
 public class TestUtil {
@@ -21,6 +23,7 @@ public class TestUtil {
 		.password(bCryptPasswordEncoder.encode(PASSWORD))
 		.nickName(NICKNAME)
 		.telephone(TELEPHONE)
+		.role(Role.CLIENT)
 		.build();
 
 	//Ott
@@ -33,10 +36,9 @@ public class TestUtil {
 	public static final Ott savedOtt = Ott
 		.builder()
 		.name(OTT_NAME)
-		.leaderFee(LEADER_FEE)
-		.commonFee(COMMON_FEE)
 		.maximumCapacity(MAXIMUM_CAPACITY)
 		.minimumCapacity(MINIMUM_CAPACITY)
+		.perDayPrice(new Money(1000))
 		.build();
 
 	//Party

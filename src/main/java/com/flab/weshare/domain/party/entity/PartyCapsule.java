@@ -40,18 +40,22 @@ public class PartyCapsule extends BaseEntity {
 	@Enumerated(value = EnumType.STRING)
 	private PartyCapsuleStatus partyCapsuleStatus;
 
-	/**
-	 * 현재 파티캡슐 만료 날짜
-	 */
 	private LocalDate expirationDate;
+
+	private LocalDate joinDate;
 
 	private boolean cancelReservation;
 
 	@Builder
-	private PartyCapsule(User partyMember, Party party, PartyCapsuleStatus partyCapsuleStatus) {
+	public PartyCapsule(Long id, User partyMember, Party party, PartyCapsuleStatus partyCapsuleStatus,
+		LocalDate expirationDate, LocalDate joinDate, boolean cancelReservation) {
+		this.id = id;
 		this.partyMember = partyMember;
 		this.party = party;
 		this.partyCapsuleStatus = partyCapsuleStatus;
+		this.expirationDate = expirationDate;
+		this.joinDate = joinDate;
+		this.cancelReservation = cancelReservation;
 	}
 
 	public static PartyCapsule makeEmptyCapsule(Party party) {
