@@ -5,8 +5,8 @@ pipeline {
         // Checkout Git repository
         stage('Checkout Git') {
             steps {
-                checkout scm
-                echo 'Git Checkout Success!'
+                git branch: env.GIT_BRANCH, url: 'https://github.com/f-lab-edu/weshare.git'
+                echo 'please please'
             }
         }
     }
