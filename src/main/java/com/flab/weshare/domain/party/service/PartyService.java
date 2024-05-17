@@ -7,9 +7,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.flab.weshare.domain.party.dto.ContractRenewalResponse;
 import com.flab.weshare.domain.party.dto.ModifyPartyRequest;
 import com.flab.weshare.domain.party.dto.PartyCreationRequest;
 import com.flab.weshare.domain.party.dto.PartyJoinRequest;
+import com.flab.weshare.domain.party.dto.SignContractResponse;
 import com.flab.weshare.domain.party.entity.Ott;
 import com.flab.weshare.domain.party.entity.Party;
 import com.flab.weshare.domain.party.entity.PartyCapsule;
@@ -154,5 +156,26 @@ public class PartyService {
 		if (!partyJoin.isWaitingPartyJoin()) {
 			throw new IllegalArgumentException("파티 조인의 상태가 대기 상태가 아닙니다.");
 		}
+	}
+
+	@Transactional(readOnly = true)
+	public ContractRenewalResponse formContractRenewalResponse(final Long partyCapsuleId) {
+		PartyCapsule partyCapsule = partyCapsuleRepository.findByIdForFetchAll(partyCapsuleId).orElseThrow(
+			() -> new IllegalArgumentException("partyCapsule 엔티티가 존재하지 않음. partyCapsuleId = " + partyCapsuleId)
+		);
+
+		return new ContractRenewalResponse(partyCapsule.getPartyMember().getEmail(), partyCapsule.getExpirationDate(),
+			partyCapsule.getParty().getOtt().getName());
+	}
+
+	@Transactional(readOnly = true)
+	public SignContractResponse formSignContractResponse(final Long partyCapsuleId) {
+		PartyCapsule partyCapsule = partyCapsuleRepository.findByIdForFetchAll(partyCapsuleId).orElseThrow(
+			() -> new IllegalArgumentException("partyCapsule 엔티티가 존재하지 않음. partyCapsuleId = " + partyCapsuleId)
+		);
+
+		return new SignContractResponse(partyCapsule.getPartyMember().getEmail(), partyCapsule.getExpirationDate(),
+			partyCapsule.getParty().getOtt().getName(), partyCapsule.getParty().getOttAccountId(),
+			partyCapsule.getParty().getOttAccountPassword());
 	}
 }
