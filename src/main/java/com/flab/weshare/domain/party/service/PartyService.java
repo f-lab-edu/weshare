@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.flab.weshare.domain.party.dto.LeadingPartySummary;
+import com.flab.weshare.domain.party.dto.ContractRenewalResponse;
 import com.flab.weshare.domain.party.dto.ModifyPartyRequest;
 import com.flab.weshare.domain.party.dto.ParticipatedPartyDto;
 import com.flab.weshare.domain.party.dto.ParticipatingPartySummary;
@@ -15,6 +16,7 @@ import com.flab.weshare.domain.party.dto.PartyCapsuleInfo;
 import com.flab.weshare.domain.party.dto.PartyCreationRequest;
 import com.flab.weshare.domain.party.dto.PartyInfo;
 import com.flab.weshare.domain.party.dto.PartyJoinRequest;
+import com.flab.weshare.domain.party.dto.SignContractResponse;
 import com.flab.weshare.domain.party.entity.Ott;
 import com.flab.weshare.domain.party.entity.Party;
 import com.flab.weshare.domain.party.entity.PartyCapsule;
@@ -202,5 +204,23 @@ public class PartyService {
 		if (!userId.equals(targetId)) {
 			throw new UnsatisfiedAuthorityException(ErrorCode.INSUFFICIENT_AUTHORITY);
 		}
+	public ContractRenewalResponse formContractRenewalResponse(final Long partyCapsuleId) {
+		PartyCapsule partyCapsule = partyCapsuleRepository.findByIdForFetchAll(partyCapsuleId).orElseThrow(
+			() -> new IllegalArgumentException("partyCapsule 엔티티가 존재하지 않음. partyCapsuleId = " + partyCapsuleId)
+		);
+
+		return new ContractRenewalResponse(partyCapsule.getPartyMember().getEmail(), partyCapsule.getExpirationDate(),
+			partyCapsule.getParty().getOtt().getName());
+	}
+
+	@Transactional(readOnly = true)
+	public SignContractResponse formSignContractResponse(final Long partyCapsuleId) {
+		PartyCapsule partyCapsule = partyCapsuleRepository.findByIdForFetchAll(partyCapsuleId).orElseThrow(
+			() -> new IllegalArgumentException("partyCapsule 엔티티가 존재하지 않음. partyCapsuleId = " + partyCapsuleId)
+		);
+
+		return new SignContractResponse(partyCapsule.getPartyMember().getEmail(), partyCapsule.getExpirationDate(),
+			partyCapsule.getParty().getOtt().getName(), partyCapsule.getParty().getOttAccountId(),
+			partyCapsule.getParty().getOttAccountPassword());
 	}
 }

@@ -63,4 +63,7 @@ public interface PartyCapsuleRepository extends JpaRepository<PartyCapsule, Long
 		+ "join fetch pcp.ott "
 		+ "where pc.id =:id")
 	Optional<PartyCapsule> findPartyCapsuleById(@Param("id") Long partyCapsuleId);
+		+ "join fetch pc.partyMember pm "
+		+ "where pc.id =:partyCapsuleId")
+	Optional<PartyCapsule> findByIdForFetchAll(@Param("partyCapsuleId") Long partyCapsuleId);
 }

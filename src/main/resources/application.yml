@@ -4,3 +4,8 @@ spring:
     group:
       "local": "local, common"
       "prod": "prod, common"
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_USER_NAME}
+    password: ${GMAIL_PASSWORD}
