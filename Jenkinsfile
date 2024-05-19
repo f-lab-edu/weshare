@@ -28,15 +28,16 @@ pipeline {
                 sh "./gradlew clean build"
             }
         }
-        post {
-            success {
-                // 빌드 성공 후 수행할 작업
-                echo 'Build succeeded!'
-            }
-            failure {
-                // 빌드 실패 후 수행할 작업
-                echo 'Build failed!'
-            }
+    }
+
+    post {
+        success {
+            // 빌드 성공 후 수행할 작업
+            echo 'Build succeeded!'
+        }
+        failure {
+            // 빌드 실패 후 수행할 작업
+            echo 'Build failed!'
         }
     }
 }
