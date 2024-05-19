@@ -17,7 +17,6 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: none
-    generate-ddl: false
 
   sql:
     init:
@@ -39,3 +38,13 @@ jwt:
 pay:
   rest_application_id: ${REST_APPLICATION_ID}
   private_key: ${PRIVATE_KEY}
+
+aes:
+  password: ${AES_PASSWORD}
+  salt: ${AES_SALT}
+
+batch:
+  pay:
+    chunksize: ${BATCH_PAY_CHUNKSIZE}
+    savepath: ${BATCH_PAY_SAVEPATH}
+    cachesize: ${BATCH_PAY_CACHESIZE}
