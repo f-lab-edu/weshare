@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        jdk("java17")
+    }
+
     stages {
         // Checkout Git repository
         stage('Checkout Git') {
@@ -26,7 +30,7 @@ pipeline {
             steps {
                 sh "java -version"
                 sh 'echo $JAVA_HOME'
-                
+
                 echo 'build 수행'
                 sh "./gradlew clean build"
             }
