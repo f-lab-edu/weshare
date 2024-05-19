@@ -8,7 +8,6 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +21,7 @@ public class PayScheduler {
 	@Autowired
 	private Job paymentJob;
 
-	@Scheduled(cron = "0/10 * * * * *")
+	//@Scheduled(cron = "0/10 * * * * *")
 	//@Scheduled(cron = "0 0 0/1 * * *") //1시간 마다
 	public void partyMatchingSchedule() {
 		try {
