@@ -28,23 +28,42 @@ pipeline {
 
         stage('build') {
             steps {
-                sh "java -version"
-                sh 'echo $JAVA_HOME'
-
                 echo 'build 수행'
                 sh "./gradlew clean build"
             }
         }
-    }
 
+        stage('Docker Build') {
+            steps {
+                script {
+                    echo 'docker image 빌드'
+                    docker.build("weshare:latest")
+                }
+            }
+        }
+
+        stage('Verify Local Image') {
+            steps {
+                script {
+                    def imageExists = sh(script: "docker images -q weshare:latest", returnStatus: true) == 0
+                    if (imageExists) {
+                        echo "Docker image weshare:latest exists locally."
+                    } else {
+                        error "Docker image weshare:latest does not exist locally."
+                    }
+                }
+            }
+        }
+
+    }
     post {
         success {
             // 빌드 성공 후 수행할 작업
-            echo 'Build succeeded!'
+            echo 'Build 성공'
         }
         failure {
             // 빌드 실패 후 수행할 작업
-            echo 'Build failed!'
+            echo 'Build 실패'
         }
     }
 }
