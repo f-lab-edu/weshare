@@ -44,7 +44,7 @@ pipeline {
         stage('build') {
             steps {
                 echo 'build 수행'
-                sh "./gradlew clean build"
+                sh "./gradlew --gradle-user-home=/home/jenkins/gradle clean build"
             }
         }
 
@@ -63,10 +63,10 @@ pipeline {
                             echo 'docker build 완료'
 
                             app.push(env.BUILD_ID)
-                            ehco 'docker image push by weshare ${env.BUILD_ID}'
+                            echo 'docker image push by weshare ${env.BUILD_ID}'
 
                             app.push('latest')
-                            ehco 'docker image push by weshare latset'
+                            echo 'docker image push by weshare latset'
                         }
                     }
                 }
