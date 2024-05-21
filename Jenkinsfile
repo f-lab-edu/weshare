@@ -6,11 +6,21 @@ pipeline {
     }
 
     stages {
+        script {
+            // BASIC
+            PROJECT_NAME = 'weshare'
+
+            // DOCKER
+            DOCKER_HUB_URL = 'registry.hub.docker.com'
+            DOCKER_HUB_FULL_URL = 'https://' + DOCKER_HUB_URL
+            DOCKER_HUB_CREDENTIAL_ID = 'dockerhub-token'
+            DOCKER_IMAGE_NAME = PROJECT_NAME
+        }
+
         // Checkout Git repository
         stage('Checkout Git') {
             steps {
                 checkout scm
-                echo 'dasfdasfdsafadsfsdafdsafdsafasd'
             }
         }
 
@@ -33,28 +43,28 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
+        stage('Build & Push Docker Image') {
             steps {
-                script {
-                    echo 'docker image 빌드'
-                    docker.build("weshare:latest")
-                }
-            }
-        }
+                echo 'Build & Push Docker Image'
+                withCredentials([usernamePassword(
+                        credentialsId: DOCKER_HUB_CREDENTIAL_ID,
+                        usernameVariable: 'DOCKER_HUB_ID',
+                        passwordVariable: 'DOCKER_HUB_PW')]) {
 
-        stage('Verify Local Image') {
-            steps {
-                script {
-                    def imageExists = sh(script: "docker images -q weshare:latest", returnStatus: true) == 0
-                    if (imageExists) {
-                        echo "Docker image weshare:latest exists locally."
-                    } else {
-                        error "Docker image weshare:latest does not exist locally."
+                    script {
+                        docker.withRegistry(DOCKER_HUB_FULL_URL,
+                                DOCKER_HUB_CREDENTIAL_ID) {
+                            app = docker.build(DOCKER_HUB_ID + '/' + DOCKER_IMAGE_NAME)
+                            echo 'docker build 완료'
+                            app.push(env.BUILD_ID)
+                            ehco 'docker image push by weshare ${env.BUILD_ID}'
+                            app.push('latest')
+                            ehco 'docker image push by weshare latset'
+                        }
                     }
                 }
             }
         }
-
     }
     post {
         success {
