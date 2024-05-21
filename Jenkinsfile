@@ -6,16 +6,21 @@ pipeline {
     }
 
     stages {
-        script {
-            // BASIC
-            PROJECT_NAME = 'weshare'
+        stage('configure variables') {
+            steps {
+                script {
+                    // BASIC
+                    PROJECT_NAME = 'weshare'
 
-            // DOCKER
-            DOCKER_HUB_URL = 'registry.hub.docker.com'
-            DOCKER_HUB_FULL_URL = 'https://' + DOCKER_HUB_URL
-            DOCKER_HUB_CREDENTIAL_ID = 'dockerhub-token'
-            DOCKER_IMAGE_NAME = PROJECT_NAME
+                    // DOCKER
+                    DOCKER_HUB_URL = 'registry.hub.docker.com'
+                    DOCKER_HUB_FULL_URL = 'https://' + DOCKER_HUB_URL
+                    DOCKER_HUB_CREDENTIAL_ID = 'dockerhub-token'
+                    DOCKER_IMAGE_NAME = PROJECT_NAME
+                }
+            }
         }
+
 
         // Checkout Git repository
         stage('Checkout Git') {
@@ -56,8 +61,10 @@ pipeline {
                                 DOCKER_HUB_CREDENTIAL_ID) {
                             app = docker.build(DOCKER_HUB_ID + '/' + DOCKER_IMAGE_NAME)
                             echo 'docker build 완료'
+
                             app.push(env.BUILD_ID)
                             ehco 'docker image push by weshare ${env.BUILD_ID}'
+
                             app.push('latest')
                             ehco 'docker image push by weshare latset'
                         }
