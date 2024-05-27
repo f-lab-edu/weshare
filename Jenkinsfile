@@ -74,16 +74,16 @@ pipeline {
 //            }
 //        }
 
-          stage('test') {
-              steps {
-                  script {
-                      def workspace = ${env.WORKSPACE}
-                      sh '''
+        stage('test') {
+            steps {
+                script {
+                    def workspace = $ { env.WORKSPACE }
+                    sh '''
                  ls al "${workspace}"
                 '''
-                  }
-              }
-          }
+                }
+            }
+        }
 
 //        stage('Server Run') {
 //            steps {
@@ -169,7 +169,6 @@ pipeline {
 //                    }
 //                }
 //            }
-        }
     }
 
     post {
