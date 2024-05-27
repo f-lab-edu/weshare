@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  weshare-blue-server1:
+    container_name: weshare-blue-1
+    image: 1295e70b879f
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    environment:
+      - SERVER_PORT=8081
+      - SPRING_PROFILES_ACTIVE=blue
+
+  weshare-blue-server2:
+    container_name: weshare-blue-2
+    image: 1295e70b879f
+    ports:
+      - "8082:8082"
+    env_file:
+      - .env
+    environment:
+      - SERVER_PORT=8082
+      - SPRING_PROFILES_ACTIVE=blue
