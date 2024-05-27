@@ -46,13 +46,6 @@ pipeline {
             }
         }
 
-        stage('build') {
-            steps {
-                echo 'build 수행'
-                sh "./gradlew --gradle-user-home=/home/jenkins/gradle clean build"
-            }
-        }
-
         stage('Build & Push Docker Image') {
             steps {
                 echo 'Build & Push Docker Image'
