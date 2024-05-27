@@ -78,7 +78,7 @@ pipeline {
         stage('Server Run') {
             steps {
                 script {
-                    def workspace = $ { env.WORKSPACE }
+                    def workspace = "${env.WORKSPACE}"
                     sshagent(credentials: ['weshareSSH']) {
                         sh '''
                     #!/bin/bash
