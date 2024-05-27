@@ -79,7 +79,7 @@ pipeline {
             steps {
                 script {
                     sshagent(credentials: ['weshareSSH']) {
-                    sh '''#!/bin/bash
+                        sh '''#!/bin/bash
 
                     #필요한 변수정리
                     #현재 가동중인 컨테이너의 색상 확인, 만약 없을시 blue로 진행.
@@ -154,14 +154,15 @@ pipeline {
                     }
                 }
             }
-    }
-
-    post {
-        success {
-            echo 'Build 성공'
         }
-        failure {
-            echo 'Build 실패'
+
+        post {
+            success {
+                echo 'Build 성공'
+            }
+            failure {
+                echo 'Build 실패'
+            }
         }
     }
 }
