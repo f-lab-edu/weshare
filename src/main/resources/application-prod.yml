@@ -4,3 +4,10 @@ spring:
     generate-ddl: false
     hibernate:
       ddl-auto: none
+
+async:
+  threadNamePrefix: 'async-thread-'
+  corePoolSize: 20
+  maxPoolSize: 40
+  queueCapacity: 400
+  keepAliveSeconds: 30

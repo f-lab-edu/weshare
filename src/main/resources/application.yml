@@ -3,7 +3,8 @@ spring:
     default: local
     group:
       "local": "local, common"
-      "prod": "prod, common"
+      "green": "prod, common, green"
+      "blue": "prod, common, blue"
   mail:
     host: smtp.gmail.com
     port: 587
