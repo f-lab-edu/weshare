@@ -11,10 +11,9 @@ pipeline {
                 script {
                     checkout scm
                     def target_directory = '/var/lib/jenkins/'
-                    sh """
-                    find . -type f -name "docker-compose*" -exec cp {} "$target_directory" \;
-                    """
-
+                    sh '''
+                    find . -type f -name "docker-compose*" -exec cp {} "$target_directory";
+                    '''
                 }
             }
         }
