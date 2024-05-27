@@ -77,8 +77,8 @@ pipeline {
         stage('test') {
             steps {
                 script {
-                    def workspace = $ { env.WORKSPACE }
                     sh '''
+                        workspace = ${env.WORKSPACE}
                          ls al "${workspace}"
                         '''
                 }
