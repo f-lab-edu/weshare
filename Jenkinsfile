@@ -113,15 +113,14 @@ pipeline {
 
                     # target_ports_var 변수의 값 읽어오기
                     target_ports="${!target_ports_var}"
-                    IFS=' ' read -ra ports <<< "${target_ports}"
+                    IFS=" " read -ra ports <<< ${target_ports}
 
                     #컨테이너 health check 배포서버 두개를 가정하고 있으므로 서버 두개 health check 성공을 확인 해야함.
                     for retry_count in $(seq 10);do
                       server_completed=0
-                      for port in "${ports[@]}";do
+                      for port in ${ports[@]};do
                         response=$(curl -s http://${target_ip}:${port}/server)
-                        address=http://${target_ip}:${port}/server
-                        echo "${address}"
+                        echo "${http://${target_ip}:${port}/server}"
                         if [ "$response" = "$target_container" ] ; then
                           echo "${address} server up completed"
                           ((server_completed++))
