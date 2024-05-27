@@ -6,122 +6,86 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
+        stage('Checkout Git') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Inject .env') {
             steps {
                 script {
-                    // 현재 브랜치 이름을 가져옵니다.
-                    def branchName = env.BRANCH_NAME
-                    runCI()
-                    runCD()
-                    // main 브랜치와 나머지 브랜치에 대한 조건을 설정합니다.
-//                    if (branchName == 'main') {
-//                        echo "Running CI/CD for main branch"
-//                        // main 브랜치에 대해 CI/CD 스테이지를 실행합니다.
-//                        runCI()
-//                        runCD()
-//                    } else {
-//                        echo "Running CI for branch ${branchName}"
-//                        // main 브랜치를 제외한 브랜치에 대해 CI 스테이지만 실행합니다.
-//                        runCI()
-//                    }
+                    def workspace = pwd()
+                    def envFilePath = "${workspace}/.env"
+
+                    def jenkinsEnvFilePath = '/var/lib/jenkins/.env'
+                    sh "cp ${jenkinsEnvFilePath} ${envFilePath}"
                 }
             }
         }
-    }
 
-    post {
-        success {
-            echo 'Build 성공'
-        }
-        failure {
-            echo 'Build 실패'
-        }
-    }
-}
-
-def runCI() {
-    stage('Checkout Git') {
-        steps {
-            checkout scm
-        }
-    }
-
-    stage('Inject .env') {
-        steps {
-            script {
-                def workspace = pwd()
-                def envFilePath = "${workspace}/.env"
-
-                def jenkinsEnvFilePath = '/var/lib/jenkins/.env'
-                sh "cp ${jenkinsEnvFilePath} ${envFilePath}"
+        stage('build') {
+            steps {
+                echo 'build 수행'
+                sh "./gradlew --gradle-user-home=/home/jenkins/gradle clean build"
             }
         }
-    }
 
-    stage('build') {
-        steps {
-            echo 'build 수행'
-            sh "./gradlew --gradle-user-home=/home/jenkins/gradle clean build"
-        }
-    }
-}
-
-def runCD() {
-    stage('configure deploy variables') {
-        steps {
-            script {
-                // BASIC
-                PROJECT_NAME = 'weshare'
-
-                // DOCKER
-                DOCKER_HUB_URL = 'registry.hub.docker.com'
-                DOCKER_HUB_FULL_URL = 'https://' + DOCKER_HUB_URL
-                DOCKER_HUB_CREDENTIAL_ID = 'dockerhub-token'
-                DOCKER_IMAGE_NAME = PROJECT_NAME
-            }
-        }
-    }
-
-    stage('build') {
-        steps {
-            echo 'build 수행'
-            sh "./gradlew --gradle-user-home=/home/jenkins/gradle clean build"
-        }
-    }
-
-    stage('Build & Push Docker Image') {
-        steps {
-            echo 'Build & Push Docker Image'
-            withCredentials([usernamePassword(
-                    credentialsId: DOCKER_HUB_CREDENTIAL_ID,
-                    usernameVariable: 'DOCKER_HUB_ID',
-                    passwordVariable: 'DOCKER_HUB_PW')]) {
-
+        stage('configure deploy variables') {
+            steps {
                 script {
-                    docker.withRegistry(DOCKER_HUB_FULL_URL,
-                            DOCKER_HUB_CREDENTIAL_ID) {
-                        app = docker.build(DOCKER_HUB_ID + '/' + DOCKER_IMAGE_NAME)
-                        echo 'docker build 완료'
+                    // BASIC
+                    PROJECT_NAME = 'weshare'
 
-                        app.push(env.BUILD_ID)
-                        echo 'docker image push by weshare ${env.BUILD_ID}'
+                    // DOCKER
+                    DOCKER_HUB_URL = 'registry.hub.docker.com'
+                    DOCKER_HUB_FULL_URL = 'https://' + DOCKER_HUB_URL
+                    DOCKER_HUB_CREDENTIAL_ID = 'dockerhub-token'
+                    DOCKER_IMAGE_NAME = PROJECT_NAME
+                }
+            }
+        }
 
-                        app.push('latest')
-                        echo 'docker image push by weshare latset'
+        stage('build') {
+            steps {
+                echo 'build 수행'
+                sh "./gradlew --gradle-user-home=/home/jenkins/gradle clean build"
+            }
+        }
+
+        stage('Build & Push Docker Image') {
+            steps {
+                echo 'Build & Push Docker Image'
+                withCredentials([usernamePassword(
+                        credentialsId: DOCKER_HUB_CREDENTIAL_ID,
+                        usernameVariable: 'DOCKER_HUB_ID',
+                        passwordVariable: 'DOCKER_HUB_PW')]) {
+
+                    script {
+                        docker.withRegistry(DOCKER_HUB_FULL_URL,
+                                DOCKER_HUB_CREDENTIAL_ID) {
+                            app = docker.build(DOCKER_HUB_ID + '/' + DOCKER_IMAGE_NAME)
+                            echo 'docker build 완료'
+
+                            app.push(env.BUILD_ID)
+                            echo 'docker image push by weshare ${env.BUILD_ID}'
+
+                            app.push('latest')
+                            echo 'docker image push by weshare latset'
+                        }
                     }
                 }
             }
         }
-    }
 
-    stage('Server Run') {
-        steps {
-            script {
-                def workspace = pwd()
-                def jenkinsEnvFilePath = '/var/lib/jenkins/.env'
+        stage('Server Run') {
+            steps {
+                script {
+                    def workspace = pwd()
+                    def jenkinsEnvFilePath = '/var/lib/jenkins/.env'
 
-                sshagent(credentials: ['weshareSSH']) {
-                    sh '''#!/bin/bash
+                    sshagent(credentials: ['weshareSSH']) {
+                        sh '''#!/bin/bash
                     
                     #필요한 변수정리
                     : <<'END\'
@@ -214,9 +178,18 @@ def runCD() {
                       sh root@${target_ip} "nohup docker compose -f docker-compose-${current_container}.yml down > /dev/null &" &
                     fi
                 '''
+                    }
                 }
             }
         }
     }
-}
 
+    post {
+        success {
+            echo 'Build 성공'
+        }
+        failure {
+            echo 'Build 실패'
+        }
+    }
+}
