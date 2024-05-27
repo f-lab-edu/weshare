@@ -79,7 +79,7 @@ pipeline {
             steps {
                 script {
                     sshagent(credentials: ['weshareSSH']) {
-                        sh """
+                        sh '''
                     #!/bin/bash
 
                     #필요한 변수정리
@@ -101,7 +101,7 @@ pipeline {
 
                     #서비스 실행에 필요한 .env파일과 docker-compose.yml 전달.
                     scp -o StrictHostKeyChecking=no /var/lib/jenkins/.env root@${target_ip}:/deploy
-                    scp -o StrictHostKeyChecking=no ${env.WORKSPACE}/docker-compose-${target_container}.yml root@${target_ip}:/deploy
+                    scp -o StrictHostKeyChecking=no $env.WORKSPACE/docker-compose-${target_container}.yml root@${target_ip}:/deploy
                     ssh root@${target_ip} "nohup docker compose -f /deploy/docker-compose-${target_container}.yml up > /dev/null &" &
                     echo "target_container run"
 
@@ -151,7 +151,7 @@ pipeline {
                     if [ "$current_container" != "black" ] ; then
                       sh root@${target_ip} "nohup docker compose -f docker-compose-${current_container}.yml down > /dev/null &" &
                     fi
-                 """
+                 '''
                     }
                 }
             }
