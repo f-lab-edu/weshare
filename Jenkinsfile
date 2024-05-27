@@ -77,10 +77,10 @@ pipeline {
         stage('test') {
             steps {
                 script {
-                    sh '''
-                        workspace = ${env.WORKSPACE}
-                         ls al "${workspace}"
-                        '''
+                    sh """
+                        echo ${env.WORKSPACE}
+                         ls al ${env.WORKSPACE}
+                       """
                 }
             }
         }
