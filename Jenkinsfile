@@ -79,8 +79,8 @@ pipeline {
                 script {
                     def workspace = $ { env.WORKSPACE }
                     sh '''
-                 ls al "${workspace}"
-                '''
+                         ls al "${workspace}"
+                        '''
                 }
             }
         }
