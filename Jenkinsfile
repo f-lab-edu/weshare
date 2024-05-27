@@ -155,14 +155,14 @@ pipeline {
                 }
             }
         }
+    }
 
-        post {
-            success {
-                echo 'Build 성공'
-            }
-            failure {
-                echo 'Build 실패'
-            }
+    post {
+        success {
+            echo 'Build 성공'
+        }
+        failure {
+            echo 'Build 실패'
         }
     }
 }
