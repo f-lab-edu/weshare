@@ -105,7 +105,7 @@ pipeline {
                     #서비스 실행에 필요한 .env파일과 docker-compose.yml 전달.
                     scp -o StrictHostKeyChecking=no /var/lib/jenkins/.env root@${target_ip}:/deploy
                     scp -o StrictHostKeyChecking=no ${WORKSPACE}/docker-compose-${target_container}.yml root@${target_ip}:/deploy
-                    ssh root@${target_ip} "nohup docker compose -f /deploy/docker-compose-${target_container}.yml up > /dev/null &" &
+                    ssh root@${target_ip} "nohup docker compose -f /deploy/docker-compose-${target_container}.yml up --pull -d> /dev/null &" &
                     echo "target_container run"
 
                     # target_container에 해당하는 환경 변수 읽어오기
@@ -119,24 +119,23 @@ pipeline {
                     for retry_count in $(seq 10);do
                       server_completed=0
                       for port in ${ports[@]};do
-                        response=$(curl -s http://${target_ip}:${port}/server)
-                        echo "${http://${target_ip}:${port}/server}"
-                        if [ "$response" = "$target_container" ] ; then
-                          echo "${address} server up completed"
-                          ((server_completed++))
+                        address="http://${target_ip}:${port}/server"
+                        if curl -s ${address} > /dev/null 
+                        then
+                            echo "${address} 서버가 성공적으로 실행되었습니다."
+                            server_completed++
                         else
-                          echo "${address} server not completed yet"
+                            echo "${address} 서버가 아직 실행전입니다."
+                            break
                         fi
                       done
 
-                      echo "${server_completed}"
                       if [ $server_completed -eq 2 ] ; then
                           echo "container run completed"
                           break
                       fi
 
-                      if [ $retry_count -eq 10 ]
-                      then
+                      if [ $retry_count -eq 10 ] ; then
                         echo "Health check failed ❌"
                         exit 1
                       fi
