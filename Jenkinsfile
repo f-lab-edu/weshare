@@ -14,65 +14,65 @@ pipeline {
             }
         }
 
-        stage('Inject .env') {
-            steps {
-                script {
-                    def workspace = pwd()
-                    def envFilePath = "${workspace}/.env"
-
-                    def jenkinsEnvFilePath = '/var/lib/jenkins/.env'
-                    sh "cp ${jenkinsEnvFilePath} ${envFilePath}"
-
-                }
-            }
-        }
-
-        stage('build') {
-            steps {
-                echo 'build 수행'
-                sh "./gradlew --gradle-user-home=/home/jenkins/gradle clean build"
-            }
-        }
-
-        stage('configure deploy variables') {
-            steps {
-                script {
-                    // BASIC
-                    PROJECT_NAME = 'weshare'
-
-                    // DOCKER
-                    DOCKER_HUB_URL = 'registry.hub.docker.com'
-                    DOCKER_HUB_FULL_URL = 'https://' + DOCKER_HUB_URL
-                    DOCKER_HUB_CREDENTIAL_ID = 'dockerhub-token'
-                    DOCKER_IMAGE_NAME = PROJECT_NAME
-                }
-            }
-        }
-
-        stage('Build & Push Docker Image') {
-            steps {
-                echo 'Build & Push Docker Image'
-                withCredentials([usernamePassword(
-                        credentialsId: DOCKER_HUB_CREDENTIAL_ID,
-                        usernameVariable: 'DOCKER_HUB_ID',
-                        passwordVariable: 'DOCKER_HUB_PW')]) {
-
-                    script {
-                        docker.withRegistry(DOCKER_HUB_FULL_URL,
-                                DOCKER_HUB_CREDENTIAL_ID) {
-                            app = docker.build(DOCKER_HUB_ID + '/' + DOCKER_IMAGE_NAME)
-                            echo 'docker build 완료'
-
-                            app.push(env.BUILD_ID)
-                            echo 'docker image push by weshare ${env.BUILD_ID}'
-
-                            app.push('latest')
-                            echo 'docker image push by weshare latset'
-                        }
-                    }
-                }
-            }
-        }
+//        stage('Inject .env') {
+//            steps {
+//                script {
+//                    def workspace = pwd()
+//                    def envFilePath = "${workspace}/.env"
+//
+//                    def jenkinsEnvFilePath = '/var/lib/jenkins/.env'
+//                    sh "cp ${jenkinsEnvFilePath} ${envFilePath}"
+//
+//                }
+//            }
+//        }
+//
+//        stage('build') {
+//            steps {
+//                echo 'build 수행'
+//                sh "./gradlew --gradle-user-home=/home/jenkins/gradle clean build"
+//            }
+//        }
+//
+//        stage('configure deploy variables') {
+//            steps {
+//                script {
+//                    // BASIC
+//                    PROJECT_NAME = 'weshare'
+//
+//                    // DOCKER
+//                    DOCKER_HUB_URL = 'registry.hub.docker.com'
+//                    DOCKER_HUB_FULL_URL = 'https://' + DOCKER_HUB_URL
+//                    DOCKER_HUB_CREDENTIAL_ID = 'dockerhub-token'
+//                    DOCKER_IMAGE_NAME = PROJECT_NAME
+//                }
+//            }
+//        }
+//
+//        stage('Build & Push Docker Image') {
+//            steps {
+//                echo 'Build & Push Docker Image'
+//                withCredentials([usernamePassword(
+//                        credentialsId: DOCKER_HUB_CREDENTIAL_ID,
+//                        usernameVariable: 'DOCKER_HUB_ID',
+//                        passwordVariable: 'DOCKER_HUB_PW')]) {
+//
+//                    script {
+//                        docker.withRegistry(DOCKER_HUB_FULL_URL,
+//                                DOCKER_HUB_CREDENTIAL_ID) {
+//                            app = docker.build(DOCKER_HUB_ID + '/' + DOCKER_IMAGE_NAME)
+//                            echo 'docker build 완료'
+//
+//                            app.push(env.BUILD_ID)
+//                            echo 'docker image push by weshare ${env.BUILD_ID}'
+//
+//                            app.push('latest')
+//                            echo 'docker image push by weshare latset'
+//                        }
+//                    }
+//                }
+//            }
+//        }
 
 
         stage('Server Run') {
@@ -87,7 +87,7 @@ pipeline {
 
                     #필요한 변수정리
                     #현재 가동중인 컨테이너의 색상 확인, 만약 없을시 blue로 진행.
-                    response=$(curl -s http://${proxy_ip}/server > /dev/null 2>&1)
+                    response=$(curl -s http://${proxy_ip}/server)
                     if [ "$response" = "blue" ]; then
                         target_container=green
                         current_container=blue
