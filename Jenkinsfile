@@ -105,8 +105,8 @@ pipeline {
                     #서비스 실행에 필요한 .env파일과 docker-compose.yml 전달.
                     scp -o StrictHostKeyChecking=no /var/lib/jenkins/.env root@${target_ip}:/deploy
                     scp -o StrictHostKeyChecking=no ${WORKSPACE}/docker-compose-${target_container}.yml root@${target_ip}:/deploy
-                    ssh root@${target_ip} "nohup docker compose -f /deploy/docker-compose-${target_container}.yml up --pull -d> /dev/null &" &
-                    echo "target_container run"
+                    ssh root@${target_ip} "docker compose -f /deploy/docker-compose-${target_container}.yml pull" 
+                    ssh root@${target_ip} "nohup docker compose -f /deploy/docker-compose-${target_container}.yml up -d" 
 
                     # target_container에 해당하는 환경 변수 읽어오기
                     target_ports_var="${target_container}_ports"
