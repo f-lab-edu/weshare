@@ -145,12 +145,12 @@ pipeline {
                     done
 
                     #nginx switch
-                    echo "set \\\$service_url ${target_container}" | sudo tee /etc/nginx/conf.d/service-url.inc
+                    echo "set \\\$service_url ${target_container};" | sudo tee /etc/nginx/conf.d/service-url.inc && sudo nginx -s reload
 
 
                     #현재 컨테이너 다운
                     if [ "$current_container" != "black" ] ; then
-                      sh root@${target_ip} "nohup docker compose -f docker-compose-${current_container}.yml down > /dev/null &" &
+                      ssh root@${target_ip} "nohup docker compose -f docker-compose-${current_container}.yml down > /dev/null &" &
                     fi
                  '''
                     }
