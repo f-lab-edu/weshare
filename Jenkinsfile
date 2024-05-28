@@ -140,8 +140,8 @@ pipeline {
                         exit 1
                       fi
 
-                      echo "The server is not alive yet. Retry health check in 5 seconds..."
-                      sleep 5
+                      echo "The server is not alive yet. Retry health check in 10 seconds..."
+                      sleep 10
                     done
 
                     #nginx switch
