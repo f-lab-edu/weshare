@@ -123,7 +123,7 @@ pipeline {
                         if curl -s ${address} > /dev/null 
                         then
                             echo "${address} 서버가 성공적으로 실행되었습니다."
-                            server_completed++
+                            ((server_completed++))
                         else
                             echo "${address} 서버가 아직 실행전입니다."
                             break
