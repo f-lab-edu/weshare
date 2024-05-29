@@ -111,15 +111,17 @@ class PartyControllerTest extends BaseControllerTest {
 	@DisplayName("유저는 관리중인 파티와 참여중인 파티에 대한 리스트를 조회할 수 있다.")
 	@Test
 	void success_get_party_list() throws Exception {
-		String accessToken = JwtProperties.TOKEN_PREFIX + jwtUtil.createAccessToken(1L);
+		String accessToken = JwtProperties.TOKEN_PREFIX + jwtUtil.createAccessToken(8L);
 		mockMvc.perform(get("/api/v1/party/my")
 				.header(JwtProperties.HEADER, accessToken)
 				.contentType(MediaType.APPLICATION_JSON))
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.success").value("true"))
-			.andExpect(jsonPath("$.data.leadingParties").isNotEmpty())
-			.andExpect(jsonPath("$.data.participatingParties").isNotEmpty());
+			.andExpect(jsonPath("$.data.participatingParties").isEmpty())
+			.andExpect(jsonPath("$.data.leadingParties[0].partyId").value("1"))
+			.andExpect(jsonPath("$.data.leadingParties[0].startDate").value("2024-03-27"))
+			.andExpect(jsonPath("$.data.leadingParties[0].ottName").value("넷플릭스"));
 	}
 
 	@DisplayName("유저는 관리중인 파티를 개별 조회 할 수 있다.")
@@ -147,7 +149,7 @@ class PartyControllerTest extends BaseControllerTest {
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.success").value("true"))
-			.andExpect(jsonPath("$.data.statDate").value("2024-03-26"))
+			.andExpect(jsonPath("$.data.startDate").value("2024-03-26"))
 			.andExpect(jsonPath("$.data.expirationDate").value("2024-04-03"))
 			.andExpect(jsonPath("$.data.ottName").value("넷플릭스"))
 			.andExpect(jsonPath("$.data.cancelReservation").value(false))

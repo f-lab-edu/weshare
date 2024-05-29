@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Configuration
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity
 public class SecurityConfiguration {
 	private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 	private final JwtAuthorizationFilter jwtAuthorizationFilter;
@@ -33,6 +33,7 @@ public class SecurityConfiguration {
 			.sessionManagement(
 				sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests((authorizeRequests) -> authorizeRequests
+				.requestMatchers(HttpMethod.GET, "/server").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/*/user").permitAll()
 				.requestMatchers("/api/login").permitAll()
 				.anyRequest().authenticated()

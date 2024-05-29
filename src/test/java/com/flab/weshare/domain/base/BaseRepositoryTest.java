@@ -103,8 +103,7 @@ public abstract class BaseRepositoryTest {
 	private Ott generteOtt() {
 		Ott testOtt = Ott.builder()
 			.name("test")
-			.leaderFee(3000)
-			.commonFee(2000)
+			.perDayPrice(new Money(1000))
 			.maximumCapacity(3)
 			.build();
 		return testOtt;

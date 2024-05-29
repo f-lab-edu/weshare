@@ -30,7 +30,7 @@ import com.flab.weshare.utils.jwt.JwtUtil;
 
 import jakarta.persistence.EntityManager;
 
-@ActiveProfiles("test")
+@ActiveProfiles(value = "test")
 @Transactional
 @Import({TestContainerConfig.class})
 @SpringBootTest
@@ -79,7 +79,7 @@ public abstract class BaseControllerTest {
 		userRepository.saveAll(users);
 
 		PartyCapsule partyCapsule = PartyCapsule.builder()
-			.party(partyRepository.getReferenceById(2L))
+			.party(partyRepository.getReferenceById(savedParty.getId()))
 			.partyMember(savedUser)
 			.partyCapsuleStatus(PartyCapsuleStatus.OCCUPIED)
 			.joinDate(LocalDate.now())
