@@ -12,7 +12,6 @@ spring:
     init:
       schema-locations: classpath:/sql/init.sql
       mode: always
-
 #logging:
 #  level:
 #    org:

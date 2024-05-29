@@ -3,7 +3,7 @@ version: '3'
 services:
   weshare-blue-server1:
     container_name: weshare-blue-1
-    image: 1295e70b879f
+    image: goodchoi/weshare:latest
     ports:
       - "8081:8081"
     env_file:
@@ -14,7 +14,7 @@ services:
 
   weshare-blue-server2:
     container_name: weshare-blue-2
-    image: 1295e70b879f
+    image: goodchoi/weshare:latest
     ports:
       - "8082:8082"
     env_file:

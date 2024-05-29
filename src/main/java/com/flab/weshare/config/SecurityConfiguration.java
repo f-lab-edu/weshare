@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Configuration
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity
 public class SecurityConfiguration {
 	private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 	private final JwtAuthorizationFilter jwtAuthorizationFilter;
