@@ -9,11 +9,13 @@ pipeline {
     stages {
         stage('check chore') {
             steps {
-                if (env.BRANCH_NAME == 'main') {
-                    def changes = sh(script: 'git diff --name-only HEAD~1', returnStdout: true).trim()
-                    if (changes == 'README.md') {
-                        currentBuild.result = 'SUCCESS'
-                        return
+                script {
+                    if (env.BRANCH_NAME == 'main') {
+                        def changes = sh(script: 'git diff --name-only HEAD~1', returnStdout: true).trim()
+                        if (changes == 'README.md') {
+                            currentBuild.result = 'SUCCESS'
+                            return
+                        }
                     }
                 }
             }
@@ -49,9 +51,11 @@ pipeline {
 
         stage('check CI') {
             steps {
-                if (env.BRANCH_NAME != 'main') {
-                    currentBuild.result = 'SUCCESS'
-                    return
+                script {
+                    if (env.BRANCH_NAME != 'main') {
+                        currentBuild.result = 'SUCCESS'
+                        return
+                    }
                 }
             }
         }
