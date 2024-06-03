@@ -5,6 +5,7 @@ pipeline {
         jdk("java17")
     }
 
+    //CI
     stages {
         stage('check chore') {
             steps {
@@ -17,10 +18,7 @@ pipeline {
                 }
             }
         }
-    }
 
-    //CI
-    stages {
         stage('Checkout Git') {
             steps {
                 script {
@@ -49,13 +47,11 @@ pipeline {
             }
         }
 
-        stages {
-            stage('check CI') {
-                steps {
-                    if (env.BRANCH_NAME != 'main') {
-                        currentBuild.result = 'SUCCESS'
-                        return
-                    }
+        stage('check CI') {
+            steps {
+                if (env.BRANCH_NAME != 'main') {
+                    currentBuild.result = 'SUCCESS'
+                    return
                 }
             }
         }
