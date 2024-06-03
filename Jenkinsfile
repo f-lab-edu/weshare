@@ -18,7 +18,7 @@ pipeline {
                         }
                     }
 
-                    if (env.BRANCH_NAME.startsWith('chore') || env.BRANCH_NAME.startsWith('docs') {
+                    if (env.BRANCH_NAME.startsWith('chore') || env.BRANCH_NAME.startsWith('docs')) {
                         currentBuild.result = 'SUCCESS'
                         return
                     }
