@@ -5,7 +5,22 @@ pipeline {
         jdk("java17")
     }
 
+    //CI
     stages {
+        stage('check chore') {
+            steps {
+                script {
+                    if (env.BRANCH_NAME == 'main') {
+                        def changes = sh(script: 'git diff --name-only HEAD~1', returnStdout: true).trim()
+                        if (changes == 'README.md') {
+                            currentBuild.result = 'SUCCESS'
+                            return
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Checkout Git') {
             steps {
                 script {
@@ -34,6 +49,18 @@ pipeline {
             }
         }
 
+        stage('check CI') {
+            steps {
+                script {
+                    if (env.BRANCH_NAME != 'main') {
+                        currentBuild.result = 'SUCCESS'
+                        return
+                    }
+                }
+            }
+        }
+
+        // CD
         stage('configure deploy variables') {
             steps {
                 script {
