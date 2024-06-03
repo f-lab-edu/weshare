@@ -10,7 +10,9 @@ pipeline {
         stage('check chore') {
             steps {
                 script {
+                    echo "Branch ${env.BRANCH_NAME}"
                     if (env.BRANCH_NAME == 'main') {
+
                         def changes = sh(script: 'git diff --name-only HEAD~1', returnStdout: true).trim()
                         if (changes == 'README.md') {
                             currentBuild.result = 'SUCCESS'
