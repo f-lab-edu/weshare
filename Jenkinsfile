@@ -1,3 +1,5 @@
+def SKIP_REST_OF_PIPELINE = 'false'
+
 pipeline {
     agent any
 
@@ -5,84 +7,134 @@ pipeline {
         jdk("java17")
     }
 
+    //CI
     stages {
-        stage('Checkout Git') {
+        stage('check chore') {
             steps {
                 script {
-                    checkout scm
+                    def commitBody = sh(script: 'git show --format=%s "${GIT_COMMIT}"', returnStdout: true)
+                    echo "${commitBody}"
+                    if (commitBody != null && commitBody.contains('chore') || commitBody.contains('docs')) {
+                        currentBuild.result = 'SUCCESS'
+                        SKIP_REST_OF_PIPELINE = 'true'
+                        return
+                    }
+//                    if (env.BRANCH_NAME == 'main') {
+//
+//                    }
+
+                    if (env.BRANCH_NAME.startsWith('chore') || env.BRANCH_NAME.startsWith('docs')) {
+                        currentBuild.result = 'SUCCESS'
+                        SKIP_REST_OF_PIPELINE = 'true'
+                        return
+                    }
                 }
             }
         }
 
-        stage('Inject .env') {
-            steps {
-                script {
-                    def workspace = pwd()
-                    def envFilePath = "${workspace}/.env"
+        stage('CI') {
+            when {
+                expression { SKIP_REST_OF_PIPELINE == 'false' }
+            }
 
-                    def jenkinsEnvFilePath = '/var/lib/jenkins/.env'
-                    sh "cp ${jenkinsEnvFilePath} ${envFilePath}"
-
+            stages {
+                stage('Checkout Git') {
+                    steps {
+                        script {
+                            checkout scm
+                        }
+                    }
                 }
-            }
-        }
 
-        stage('build') {
-            steps {
-                echo 'build 수행'
-                sh "./gradlew --gradle-user-home=/home/jenkins/gradle clean build"
-            }
-        }
+                stage('Inject .env') {
+                    steps {
+                        script {
+                            def workspace = pwd()
+                            def envFilePath = "${workspace}/.env"
 
-        stage('configure deploy variables') {
-            steps {
-                script {
-                    // BASIC
-                    PROJECT_NAME = 'weshare'
+                            def jenkinsEnvFilePath = '/var/lib/jenkins/.env'
+                            sh "cp ${jenkinsEnvFilePath} ${envFilePath}"
 
-                    // DOCKER
-                    DOCKER_HUB_URL = 'registry.hub.docker.com'
-                    DOCKER_HUB_FULL_URL = 'https://' + DOCKER_HUB_URL
-                    DOCKER_HUB_CREDENTIAL_ID = 'dockerhub-token'
-                    DOCKER_IMAGE_NAME = PROJECT_NAME
+                        }
+                    }
                 }
-            }
-        }
 
-        stage('Build & Push Docker Image') {
-            steps {
-                echo 'Build & Push Docker Image'
-                withCredentials([usernamePassword(
-                        credentialsId: DOCKER_HUB_CREDENTIAL_ID,
-                        usernameVariable: 'DOCKER_HUB_ID',
-                        passwordVariable: 'DOCKER_HUB_PW')]) {
+                stage('build') {
+                    steps {
+                        echo 'build 수행'
+                        sh "./gradlew --gradle-user-home=/home/jenkins/gradle clean build"
+                    }
+                }
 
-                    script {
-                        docker.withRegistry(DOCKER_HUB_FULL_URL,
-                                DOCKER_HUB_CREDENTIAL_ID) {
-                            app = docker.build(DOCKER_HUB_ID + '/' + DOCKER_IMAGE_NAME)
-                            echo 'docker build 완료'
-
-                            app.push(env.BUILD_ID)
-                            echo 'docker image push by weshare ${env.BUILD_ID}'
-
-                            app.push('latest')
-                            echo 'docker image push by weshare latset'
+                stage('check CI') {
+                    steps {
+                        script {
+                            if (env.BRANCH_NAME != 'main') {
+                                currentBuild.result = 'SUCCESS'
+                                env.SKIP_REST_OF_PIPELINE = 'true'
+                                return
+                            }
                         }
                     }
                 }
             }
         }
 
+        stage('CD') {
+            when {
+                expression { SKIP_REST_OF_PIPELINE == 'false' }
+            }
 
-        stage('Server Run') {
-            steps {
-                script {
-                    def workspace = "${env.WORKSPACE}"
-                    echo "${workspace}"
+            stages {
+                stage('configure deploy variables') {
+                    steps {
+                        script {
+                            // BASIC
+                            PROJECT_NAME = 'weshare'
 
-                    sshagent(credentials: ['weshareSSH']) {
-                        sh '''
+                            // DOCKER
+                            DOCKER_HUB_URL = 'registry.hub.docker.com'
+                            DOCKER_HUB_FULL_URL = 'https://' + DOCKER_HUB_URL
+                            DOCKER_HUB_CREDENTIAL_ID = 'dockerhub-token'
+                            DOCKER_IMAGE_NAME = PROJECT_NAME
+                        }
+                    }
+                }
+
+                stage('Build & Push Docker Image') {
+                    steps {
+                        echo 'Build & Push Docker Image'
+                        withCredentials([usernamePassword(
+                                credentialsId: DOCKER_HUB_CREDENTIAL_ID,
+                                usernameVariable: 'DOCKER_HUB_ID',
+                                passwordVariable: 'DOCKER_HUB_PW')]) {
+
+                            script {
+                                docker.withRegistry(DOCKER_HUB_FULL_URL,
+                                        DOCKER_HUB_CREDENTIAL_ID) {
+                                    app = docker.build(DOCKER_HUB_ID + '/' + DOCKER_IMAGE_NAME)
+                                    echo 'docker build 완료'
+
+                                    app.push(env.BUILD_ID)
+                                    echo 'docker image push by weshare ${env.BUILD_ID}'
+
+                                    app.push('latest')
+                                    echo 'docker image push by weshare latset'
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+                stage('Server Run') {
+                    steps {
+                        script {
+                            def workspace = "${env.WORKSPACE}"
+                            echo "${workspace}"
+
+                            sshagent(credentials: ['weshareSSH']) {
+                                sh '''
                     #!/bin/bash
 
                     #필요한 변수정리
@@ -153,12 +205,13 @@ pipeline {
                       ssh root@${target_ip} "nohup docker compose -f /deploy/docker-compose-${current_container}.yml down > /dev/null &" &
                     fi
                  '''
+                            }
+                        }
                     }
                 }
             }
         }
     }
-
     post {
         success {
             echo 'Build 성공'
