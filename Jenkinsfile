@@ -12,16 +12,15 @@ pipeline {
         stage('check chore') {
             steps {
                 script {
-                    def commitBody = sh(script: 'git show --format=%s "${GIT_COMMIT}"', returnStdout: true)
-                    echo "${commitBody}"
-                    if (commitBody != null && commitBody.contains('chore') || commitBody.contains('docs')) {
-                        currentBuild.result = 'SUCCESS'
-                        SKIP_REST_OF_PIPELINE = 'true'
-                        return
+                    if (env.BRANCH_NAME == 'main') {
+                        def commitBody = sh(script: 'git show --format=%s "${GIT_COMMIT}"', returnStdout: true)
+                        echo "${commitBody}"
+                        if (commitBody != null && commitBody.contains('chore') || commitBody.contains('docs')) {
+                            currentBuild.result = 'SUCCESS'
+                            SKIP_REST_OF_PIPELINE = 'true'
+                            return
+                        }
                     }
-//                    if (env.BRANCH_NAME == 'main') {
-//
-//                    }
 
                     if (env.BRANCH_NAME.startsWith('chore') || env.BRANCH_NAME.startsWith('docs')) {
                         currentBuild.result = 'SUCCESS'
