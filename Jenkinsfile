@@ -12,8 +12,8 @@ pipeline {
         stage('check chore') {
             steps {
                 script {
-//                    def changes = sh(script: 'git branch --contains "${GIT_COMMIT}"')
-//                    echo "${changes}"
+                    def changes = sh(script: 'git branch --contains "${GIT_COMMIT}" -r')
+                    echo "${changes}"
                     sh 'printenv'
                     if (env.BRANCH_NAME == 'main') {
 
