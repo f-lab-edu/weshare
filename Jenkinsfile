@@ -12,8 +12,7 @@ pipeline {
         stage('check chore') {
             steps {
                 script {
-                    echo "${GIT_COMMIT}"
-                    //def changes = sh(script: 'git log --pretty=%P -n 1 "{commit id}"').trim()
+                    def changes = sh(script: 'git log --pretty=%P -n 1 "${GIT_COMMIT}"').trim()
                     echo "${changes}"
                     if (env.BRANCH_NAME == 'main') {
 
