@@ -12,10 +12,9 @@ pipeline {
         stage('check chore') {
             steps {
                 script {
-                    def branches = sh(script: 'git branch --contains "${GIT_COMMIT}" -r')
-                    echo "${branches}"
                     if (env.BRANCH_NAME == 'main') {
-                        if (branches.contains('chore') || branches.contains('docs')) {
+                        def commitBody = sh(script: 'git show -s --format=%b "${GIT_COMMIT}" -r')
+                        if (commitBody != null && commitBody.contains('Chore') || commitBody.contains('Docs')) {
                             currentBuild.result = 'SUCCESS'
                             SKIP_REST_OF_PIPELINE = 'true'
                             return
