@@ -12,8 +12,9 @@ pipeline {
         stage('check chore') {
             steps {
                 script {
-                    def changes = sh(script: 'git branch --contains "${GIT_COMMIT}"').trim()
-                    echo "${changes}"
+//                    def changes = sh(script: 'git branch --contains "${GIT_COMMIT}"')
+//                    echo "${changes}"
+                    echo 'printenv'
                     if (env.BRANCH_NAME == 'main') {
 
                         if (changes == 'README.md') {
