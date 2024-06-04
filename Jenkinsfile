@@ -13,8 +13,9 @@ pipeline {
             steps {
                 script {
                     if (env.BRANCH_NAME == 'main') {
-                        def commitBody = sh(script: 'git show -s --format=%b "${GIT_COMMIT}" -r')
-                        if (commitBody != null && commitBody.contains('Chore') || commitBody.contains('Docs')) {
+                        def commitBody = sh(script: 'git show --format=%s "${GIT_COMMIT}"', returnStdout: true)
+                        echo "${commitBody}"
+                        if (commitBody != null && commitBody.contains('chore') || commitBody.contains('docs')) {
                             currentBuild.result = 'SUCCESS'
                             SKIP_REST_OF_PIPELINE = 'true'
                             return
