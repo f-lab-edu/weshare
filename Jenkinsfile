@@ -12,12 +12,10 @@ pipeline {
         stage('check chore') {
             steps {
                 script {
-                    def changes = sh(script: 'git branch --contains "${GIT_COMMIT}" -r')
-                    echo "${changes}"
-                    sh 'printenv'
+                    def branches = sh(script: 'git branch --contains "${GIT_COMMIT}" -r')
+                    echo "${branches}"
                     if (env.BRANCH_NAME == 'main') {
-
-                        if (changes == 'README.md') {
+                        if (branches.contains('chore') || branches.contains('docs')) {
                             currentBuild.result = 'SUCCESS'
                             SKIP_REST_OF_PIPELINE = 'true'
                             return
