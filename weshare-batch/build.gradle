@@ -1,0 +1,7 @@
+dependencies {
+    implementation project(':weshare-core')
+    implementation project(':weshare-pay')
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    implementation 'org.springframework.batch:spring-batch-integration'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+}
