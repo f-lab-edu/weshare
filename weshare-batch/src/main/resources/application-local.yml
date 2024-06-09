@@ -1,0 +1,18 @@
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+    generate-ddl: false
+    defer-datasource-initialization: true
+  sql:
+    init:
+      schema-locations: classpath:/sql/init.sql
+      mode: never
+
+async:
+  threadNamePrefix: 'async-thread-'
+  corePoolSize: 5
+  maxPoolSize: 100
+  queueCapacity: 10000
+  keepAliveSeconds: 30

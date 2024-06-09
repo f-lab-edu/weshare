@@ -1,0 +1,17 @@
+spring:
+  jpa:
+    show-sql: false
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+async:
+  threadNamePrefix: 'async-thread-'
+  corePoolSize: 20
+  maxPoolSize: 40
+  queueCapacity: 400
+  keepAliveSeconds: 30
