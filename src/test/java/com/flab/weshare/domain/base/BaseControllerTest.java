@@ -5,17 +5,21 @@ import static com.flab.weshare.domain.utils.TestUtil.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flab.weshare.config.RedisTestContainerConfig;
 import com.flab.weshare.config.TestContainerConfig;
 import com.flab.weshare.domain.party.entity.PartyCapsule;
 import com.flab.weshare.domain.party.entity.PartyCapsuleStatus;
@@ -32,6 +36,7 @@ import jakarta.persistence.EntityManager;
 
 @ActiveProfiles(value = "test")
 @Transactional
+@ExtendWith({RedisTestContainerConfig.class})
 @Import({TestContainerConfig.class})
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -60,6 +65,9 @@ public abstract class BaseControllerTest {
 	@Autowired
 	protected JwtUtil jwtUtil;
 
+	@Autowired
+	RedisTemplate<String, String> redisTemplate;
+
 	protected String ACCESS_TOKEN;
 	protected String REFRESH_TOKEN;
 
@@ -68,6 +76,12 @@ public abstract class BaseControllerTest {
 		userRepository.save(savedUser);
 		ACCESS_TOKEN = JwtProperties.TOKEN_PREFIX + jwtUtil.createAccessToken(savedUser.getId());
 		REFRESH_TOKEN = JwtProperties.TOKEN_PREFIX + jwtUtil.createRefreshToken(savedUser.getId());
+		redisTemplate.opsForValue().set(
+			String.valueOf(savedUser.getId()),
+			REFRESH_TOKEN.replace(JwtProperties.TOKEN_PREFIX, ""),
+			10000000,
+			TimeUnit.MILLISECONDS
+		);
 	}
 
 	@BeforeEach

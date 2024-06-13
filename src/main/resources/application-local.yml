@@ -12,6 +12,11 @@ spring:
     init:
       schema-locations: classpath:/sql/init.sql
       mode: always
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
 #logging:
 #  level:
 #    org:

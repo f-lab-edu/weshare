@@ -70,7 +70,7 @@ pipeline {
                         script {
                             if (env.BRANCH_NAME != 'main') {
                                 currentBuild.result = 'SUCCESS'
-                                env.SKIP_REST_OF_PIPELINE = 'true'
+                                SKIP_REST_OF_PIPELINE = 'true'
                                 return
                             }
                         }
