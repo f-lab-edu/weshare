@@ -1,0 +1,11 @@
+bootJar {
+    enabled = false
+}
+jar {
+    enabled = true
+}
+
+dependencies {
+    implementation project(':weshare-core')
+    implementation 'io.github.bootpay:backend:+'
+}
