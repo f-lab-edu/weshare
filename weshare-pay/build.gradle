@@ -6,6 +6,5 @@ jar {
 }
 
 dependencies {
-    implementation project(':weshare-core')
     implementation 'io.github.bootpay:backend:+'
 }
