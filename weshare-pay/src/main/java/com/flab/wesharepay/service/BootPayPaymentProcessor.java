@@ -3,11 +3,10 @@ package com.flab.wesharepay.service;
 import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.stereotype.Component;
 
-import com.flab.core.entity.PayResult;
-import com.flab.core.entity.Payment;
+import com.flab.wesharepay.exception.CommonPayServiceException;
+import com.flab.wesharepay.exception.InvalidRequestBillingKeyException;
 
 import kr.co.bootpay.Bootpay;
 import kr.co.bootpay.model.request.Subscribe;
@@ -31,41 +30,36 @@ public class BootPayPaymentProcessor implements PaymentProcessor {
 	}
 
 	@Override
-	public String requestBillingKey(final CardEnrollRequest cardEnrollRequest, final Long userId) {
+	public String requestBillingKey(CardInfo cardInfo, Long userId) {
 		Bootpay bootpay = bootPaySetUp();
 
-		Subscribe subscribe = createNewSubScribe(cardEnrollRequest, userId);
+		Subscribe subscribe = createNewSubScribe(cardInfo, userId);
 		try {
 			HashMap<String, Object> res = bootpay.getBillingKey(subscribe);
 			if (res.get("error_code") == null) {
 				return res.get("billing_key").toString();
 			} else {
-				log.info("빌링 키 발급 실패 {}", res);
-				throw new CommonClientException(ErrorCode.FAIL_CARD_ENROLLMENT);
+				throw new InvalidRequestBillingKeyException((String)res.get("message"));
 			}
 		} catch (Exception e) {
 			log.error("빌링키 발급 중 문제 발생", e);
-			throw new RuntimeException(e.getMessage());
+			throw new CommonPayServiceException(e.getMessage());
 		}
 	}
 
 	@Override
-	public PayResult requestPayment(final String billingKey, final Integer amount, final Payment payment) {
+	public Receipt requestPayment(String billingKey, Integer amount, Long orderId) {
 		Bootpay bootpay = bootPaySetUp();
-
-		SubscribePayload payload = createNewSubScribePayLoad(billingKey, amount, String.valueOf(payment.getId()));
-
+		SubscribePayload payload = createNewSubScribePayLoad(billingKey, amount, String.valueOf(orderId));
 		try {
 			HashMap<String, Object> res = bootpay.requestSubscribe(payload);
-			JSONObject json = new JSONObject(res);
 			if (res.get("error_code") == null) {
-				return PayResult.ofSuccessfulPayResult(payment, json.toString());
+				return Receipt.successReceipt(res);
 			} else {
-				return PayResult.ofRejectedPayResult(payment, json.toString());
+				return Receipt.failReceipt(res);
 			}
 		} catch (Exception e) {
-			log.error("결제 실패 orderId : {} 결제 요청중 예외 발생 ", payment.getId(), e);
-			return PayResult.ofErrorOccurPayResult(payment, e.getMessage());
+			throw new CommonPayServiceException(e.getMessage());
 		}
 	}
 
@@ -80,16 +74,16 @@ public class BootPayPaymentProcessor implements PaymentProcessor {
 		return payload;
 	}
 
-	private Subscribe createNewSubScribe(final CardEnrollRequest cardEnrollRequest, final Long userId) {
+	private Subscribe createNewSubScribe(final CardInfo cardInfo, final Long userId) {
 		Subscribe subscribe = new Subscribe();
 		subscribe.orderName = ORDER_NAME;
 		subscribe.subscriptionId = "" + (System.currentTimeMillis() / 1000);
 		subscribe.pg = PG;
-		subscribe.cardNo = cardEnrollRequest.cardNumber();
-		subscribe.cardPw = cardEnrollRequest.cardPw();
-		subscribe.cardExpireYear = cardEnrollRequest.cardExpireYear();
-		subscribe.cardExpireMonth = cardEnrollRequest.cardExp ireMonth();
-		subscribe.cardIdentityNo = cardEnrollRequest.birthDate();
+		subscribe.cardNo = cardInfo.cardNumber();
+		subscribe.cardPw = cardInfo.cardPassword();
+		subscribe.cardExpireYear = cardInfo.cardExpireYear();
+		subscribe.cardExpireMonth = cardInfo.cardExpireMonth();
+		subscribe.cardIdentityNo = cardInfo.birthDate();
 		subscribe.user = new User();
 		subscribe.user.id = String.valueOf(userId);
 		return subscribe;
