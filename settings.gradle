@@ -1,1 +1,6 @@
 rootProject.name = 'weshare'
+
+include 'weshare-core'
+include 'weshare-batch'
+include 'weshare-api'
+include 'weshare-pay'
