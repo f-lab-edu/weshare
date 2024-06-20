@@ -1,0 +1,50 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+
+  batch:
+    job:
+      name: ${job.name:NONE}
+
+    jdbc:
+      initialize-schema: always
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USER_NAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    open-in-view: false
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  mail:
+    properties:
+      mail:
+        debug: true
+        smtp:
+          connectiontimeout: 5000
+          starttls:
+            enable: true
+            required: true
+          auth: false
+
+jwt:
+  access_expiration_time: ${JWT_ACCESS_EXPIRATION_TIME}
+  refresh_expiration_time: ${JWT_REFRESH_EXPIRATION_TIME}
+  secret: ${JWT_SECRET}
+
+pay:
+  rest_application_id: ${REST_APPLICATION_ID}
+  private_key: ${PRIVATE_KEY}
+
+aes:
+  password: ${AES_PASSWORD}
+  salt: ${AES_SALT}
+
+batch:
+  pay:
+    chunksize: ${BATCH_PAY_CHUNKSIZE}
+    savepath: ${BATCH_PAY_SAVEPATH}
+    cachesize: ${BATCH_PAY_CACHESIZE}

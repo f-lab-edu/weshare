@@ -1,0 +1,33 @@
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+    generate-ddl: false
+    #    properties:
+    #      hibernate:
+    #        format_sql: true
+    defer-datasource-initialization: true
+  sql:
+    init:
+      schema-locations: classpath:/sql/init.sql
+      mode: never
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+#logging:
+#  level:
+#    org:
+#      hibernate:
+#        type:
+#          descriptor:
+#            sql: trace
+
+async:
+  threadNamePrefix: 'async-thread-'
+  corePoolSize: 50
+  maxPoolSize: 250
+  queueCapacity: 10000
+  keepAliveSeconds: 30
