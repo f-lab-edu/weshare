@@ -1,5 +1,0 @@
-server:
-  port: ${SERVER_PORT}
-
-container:
-  color: blue
