@@ -5,7 +5,3 @@ jar {
     enabled = true
 }
 
-ext["hibernate.version"] = "6.4.0.Final"
-
-dependencies {
-}
