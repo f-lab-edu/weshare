@@ -27,11 +27,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 import com.flab.batch.paymentBatch.job.skiplistner.ExecutePaymentItemListener;
 import com.flab.batch.paymentBatch.job.skiplistner.ExecutePaymentSkipListener;
 import com.flab.core.entity.PayResult;
+import com.flab.core.entity.PayResultStatus;
 import com.flab.core.entity.Payment;
 import com.flab.core.entity.PaymentStatus;
 import com.flab.core.infra.PayResultRepository;
 import com.flab.core.infra.PaymentRepository;
-import com.flab.wesharepay.service.PayService;
+import com.flab.wesharepay.exception.CommonPayServiceException;
+import com.flab.wesharepay.service.PayServiceImpl;
+import com.flab.wesharepay.service.Receipt;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +47,7 @@ public class ExecutePaymentStepConfiguration {
 	private int CHUNKSIZE;
 	private final PayResultRepository payResultRepository;
 	private final PaymentRepository paymentRepository;
-	private final PayService payService;
+	private final PayServiceImpl payService;
 	private final Executor asyncExecutor;
 	private final PayResultCacheFileManager payResultCacheFileManager;
 
@@ -60,6 +63,7 @@ public class ExecutePaymentStepConfiguration {
 			.processorNonTransactional()
 			.skip(DataAccessException.class)
 			.skipLimit(Integer.MAX_VALUE)
+			.noRetry(CommonPayServiceException.class) //결제 서비스 이상 예외는 재시도 및 스킵 하지않고 배치 잡 종료.
 			.listener(executePaymentSkipListener())
 			.listener(executePaymentItemListener())
 			.build();
@@ -91,8 +95,19 @@ public class ExecutePaymentStepConfiguration {
 	public ItemProcessor<Payment, PayResult> delegateProcessor() {
 		return payment -> {
 			log.info("payment 결제요청 {}", payment.getId());
-			return payService.payRequest(payment);
+			return buildPayResult(payment,
+				payService.payRequest(payment.getCard().getBillingKey(), payment.getAmount().getIntegerAmount(),
+					payment.getId()));
 		};
+	}
+
+	private PayResult buildPayResult(Payment payment, Receipt receipt) {
+		PayResultStatus payResultStatus;
+		if (receipt.isSuccess()) {
+			return PayResult.ofSuccessfulPayResult(payment, receipt.getReceipt().toString());
+		} else {
+			return PayResult.ofRejectedPayResult(payment, receipt.getReceipt().toString());
+		}
 	}
 
 	@Bean
