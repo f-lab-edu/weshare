@@ -4,9 +4,6 @@ spring:
     hibernate:
       ddl-auto: none
     generate-ddl: false
-    #    properties:
-    #      hibernate:
-    #        format_sql: true
     defer-datasource-initialization: true
   sql:
     init:
@@ -31,3 +28,4 @@ async:
   maxPoolSize: 250
   queueCapacity: 10000
   keepAliveSeconds: 30
+

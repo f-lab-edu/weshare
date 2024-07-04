@@ -17,6 +17,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.flab.core.entity.User;
 import com.flab.core.infra.UserRepository;
 import com.flab.weshare.domain.auth.dto.LoginRequest;
 import com.flab.weshare.domain.auth.dto.LoginResponse;

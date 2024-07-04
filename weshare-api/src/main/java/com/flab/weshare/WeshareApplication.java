@@ -15,3 +15,4 @@ public class WeshareApplication {
 		SpringApplication.run(WeshareApplication.class, args);
 	}
 }
+

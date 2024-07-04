@@ -8,7 +8,7 @@ import com.flab.core.infra.UserRepository;
 import com.flab.weshare.domain.pay.dto.CardEnrollRequest;
 import com.flab.weshare.utils.AesBytesEncryptUtil;
 import com.flab.wesharepay.service.CardInfo;
-import com.flab.wesharepay.service.PayServiceImpl;
+import com.flab.wesharepay.service.PayService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class CardService {
 	private final UserRepository userRepository;
-	private final PayServiceImpl payService;
+	private final PayService payService;
 	private final AesBytesEncryptUtil aesBytesEncryptUtil;
 	private final CardRepository cardRepository;
 
