@@ -1,6 +1,6 @@
 spring:
   config:
-    import: optional:file:.env[.properties]
+    import: optional:file:../.env[.properties]
   datasource:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
     url: jdbc:tc:mysql:8:///
@@ -9,12 +9,6 @@ spring:
       host: localhost
       port: 6379
 
-  batch:
-    job:
-      name: ${job.name:NONE}
-      enabled: false
-    jdbc:
-      initialize-schema: always
   jpa:
     open-in-view: false
     database-platform: org.hibernate.dialect.MySQL8Dialect
@@ -26,13 +20,6 @@ spring:
     init:
       schema-locations: classpath:/sql/init.sql
       mode: always
-
-async:
-  prefix: 'async-thread-'
-  corePoolSize: 20
-  maxPoolSize: 40
-  queueCapacity: 400
-  keepAliveSeconds: 30
 
 jwt:
   access_expiration_time: ${JWT_ACCESS_EXPIRATION_TIME}
@@ -46,9 +33,3 @@ pay:
 aes:
   password: ${AES_PASSWORD}
   salt: ${AES_SALT}
-
-batch:
-  pay:
-    chunksize: ${BATCH_PAY_CHUNKSIZE}
-    savepath: ${BATCH_PAY_SAVEPATH}
-    cachesize: ${BATCH_PAY_CACHESIZE}

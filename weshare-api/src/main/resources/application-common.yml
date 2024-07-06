@@ -2,13 +2,6 @@ spring:
   config:
     import: optional:file:.env[.properties]
 
-  batch:
-    job:
-      name: ${job.name:NONE}
-
-    jdbc:
-      initialize-schema: always
-
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL}
@@ -42,9 +35,3 @@ pay:
 aes:
   password: ${AES_PASSWORD}
   salt: ${AES_SALT}
-
-batch:
-  pay:
-    chunksize: ${BATCH_PAY_CHUNKSIZE}
-    savepath: ${BATCH_PAY_SAVEPATH}
-    cachesize: ${BATCH_PAY_CACHESIZE}
