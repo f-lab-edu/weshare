@@ -1,4 +1,4 @@
-package com.flab.batch.paymentBatch.exception;
+package com.flab.batch.paymentBatch.job.exception;
 
 public class CalculatePayException extends PublishPaymentException {
 	public CalculatePayException(String message) {
