@@ -15,7 +15,7 @@ pipeline {
                     if (env.BRANCH_NAME == 'main') {
                         def commitBody = sh(script: 'git show --format=%s "${GIT_COMMIT}"', returnStdout: true)
                         echo "${commitBody}"
-                        if (commitBody != null && commitBody.contains('chore') || commitBody.contains('docs')) {
+                        if (commitBody != null && commitBody.contains('chore') || commitBody.contains('docs') || commitBody.contains('batch')) {
                             currentBuild.result = 'SUCCESS'
                             SKIP_REST_OF_PIPELINE = 'true'
                             return
@@ -61,7 +61,7 @@ pipeline {
                 stage('build') {
                     steps {
                         echo 'build 수행'
-                        sh "./gradlew --gradle-user-home=/home/jenkins/gradle clean build"
+                        sh "./gradlew :weshare-api:build"
                     }
                 }
 
@@ -111,7 +111,7 @@ pipeline {
                             script {
                                 docker.withRegistry(DOCKER_HUB_FULL_URL,
                                         DOCKER_HUB_CREDENTIAL_ID) {
-                                    app = docker.build(DOCKER_HUB_ID + '/' + DOCKER_IMAGE_NAME)
+                                    app = docker.build(DOCKER_HUB_ID + '/' + DOCKER_IMAGE_NAME, '-f weshare-api/Dockerfile weshare-api')
                                     echo 'docker build 완료'
 
                                     app.push(env.BUILD_ID)

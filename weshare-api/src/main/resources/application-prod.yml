@@ -1,0 +1,10 @@
+spring:
+  jpa:
+    show-sql: false
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}

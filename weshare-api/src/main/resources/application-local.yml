@@ -1,0 +1,17 @@
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+    generate-ddl: false
+    defer-datasource-initialization: true
+  sql:
+    init:
+      schema-locations: classpath:/sql/init.sql
+      mode: never
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
