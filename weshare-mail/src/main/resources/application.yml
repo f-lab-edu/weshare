@@ -1,0 +1,13 @@
+spring:
+  profiles:
+    default: local
+    group:
+      "local": "local, common"
+      "batchTest": "local, common"
+      "green": "prod, common, green"
+      "blue": "prod, common, blue"
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_USER_NAME}
+    password: ${GMAIL_PASSWORD}

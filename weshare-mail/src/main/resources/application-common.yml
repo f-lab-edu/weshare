@@ -1,0 +1,12 @@
+spring:
+  mail:
+    properties:
+      mail:
+        debug: true
+        smtp:
+          connectiontimeout: 5000
+          starttls:
+            enable: true
+            required: true
+          auth: false
+
