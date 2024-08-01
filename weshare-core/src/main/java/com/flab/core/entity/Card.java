@@ -4,12 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,30 +26,24 @@ public class Card extends BaseEntity {
 
 	private String billingKey; //암호화
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id")
-	private User user;
-
 	@Enumerated(value = EnumType.STRING)
 	private CardStatus cardStatus;
 
 	@Builder
-	public Card(Long id, String cardNumber, String billingKey, User user, CardStatus cardStatus) {
+	public Card(Long id, String cardNumber, String billingKey, CardStatus cardStatus) {
 		this.id = id;
 		this.cardNumber = cardNumber;
 		this.billingKey = billingKey;
-		this.user = user;
 		this.cardStatus = cardStatus;
 	}
 
-	public static Card buildNewCard(@NonNull final User user,
+	public static Card buildNewCard(
 		@NonNull final String billingKey,
 		@NonNull final String encryptCardNumber) {
 		return Card.builder()
 			.billingKey(billingKey)
 			.cardNumber(encryptCardNumber)
 			.cardStatus(CardStatus.AVAILABLE)
-			.user(user)
 			.build();
 	}
 
