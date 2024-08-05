@@ -33,7 +33,8 @@ public class Ott {
 	private int minimumCapacity;
 
 	@Builder
-	private Ott(String name, Money perDayPrice, int maximumCapacity, int minimumCapacity) {
+	private Ott(Long id, String name, Money perDayPrice, int maximumCapacity, int minimumCapacity) {
+		this.id = id;
 		this.name = name;
 		this.perDayPrice = perDayPrice;
 		this.maximumCapacity = maximumCapacity;

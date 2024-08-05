@@ -34,6 +34,10 @@ public class PartyCapsule extends BaseEntity {
 	@JoinColumn(name = "party_id")
 	private Party party;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ott_id")
+	private Ott ott;
+
 	@Enumerated(value = EnumType.STRING)
 	private PartyCapsuleStatus partyCapsuleStatus;
 
@@ -45,7 +49,7 @@ public class PartyCapsule extends BaseEntity {
 
 	@Builder
 	public PartyCapsule(Long id, User partyMember, Party party, PartyCapsuleStatus partyCapsuleStatus,
-		LocalDate expirationDate, LocalDate joinDate, boolean cancelReservation) {
+		LocalDate expirationDate, LocalDate joinDate, boolean cancelReservation, Ott ott) {
 		this.id = id;
 		this.partyMember = partyMember;
 		this.party = party;
@@ -53,6 +57,7 @@ public class PartyCapsule extends BaseEntity {
 		this.expirationDate = expirationDate;
 		this.joinDate = joinDate;
 		this.cancelReservation = cancelReservation;
+		this.ott = ott;
 	}
 
 	public static PartyCapsule makeEmptyCapsule(Party party) {
