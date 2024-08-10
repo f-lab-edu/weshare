@@ -18,7 +18,6 @@ import com.flab.core.infra.PartyCapsuleRepository;
 import com.flab.core.infra.PartyJoinRepository;
 import com.flab.core.infra.PartyRepository;
 import com.flab.core.infra.UserRepository;
-import com.flab.weshare.domain.party.dto.ContractRenewalResponse;
 import com.flab.weshare.domain.party.dto.LeadingPartySummary;
 import com.flab.weshare.domain.party.dto.ModifyPartyRequest;
 import com.flab.weshare.domain.party.dto.ParticipatedPartyDto;
@@ -27,7 +26,6 @@ import com.flab.weshare.domain.party.dto.PartyCapsuleInfo;
 import com.flab.weshare.domain.party.dto.PartyCreationRequest;
 import com.flab.weshare.domain.party.dto.PartyInfo;
 import com.flab.weshare.domain.party.dto.PartyJoinRequest;
-import com.flab.weshare.domain.party.dto.SignContractResponse;
 import com.flab.weshare.exception.ErrorCode;
 import com.flab.weshare.exception.exceptions.CommonClientException;
 import com.flab.weshare.exception.exceptions.CommonNotFoundException;
@@ -206,23 +204,16 @@ public class PartyService {
 		}
 	}
 
-	public ContractRenewalResponse formContractRenewalResponse(final Long partyCapsuleId) {
-		PartyCapsule partyCapsule = partyCapsuleRepository.findByIdForFetchAll(partyCapsuleId).orElseThrow(
+	private PartyCapsule findPartyCapsule(Long partyCapsuleId) {
+		return partyCapsuleRepository.findById(partyCapsuleId).orElseThrow(
 			() -> new IllegalArgumentException("partyCapsule 엔티티가 존재하지 않음. partyCapsuleId = " + partyCapsuleId)
 		);
-
-		return new ContractRenewalResponse(partyCapsule.getPartyMember().getEmail(), partyCapsule.getExpirationDate(),
-			partyCapsule.getParty().getOtt().getName());
 	}
 
-	@Transactional(readOnly = true)
-	public SignContractResponse formSignContractResponse(final Long partyCapsuleId) {
-		PartyCapsule partyCapsule = partyCapsuleRepository.findByIdForFetchAll(partyCapsuleId).orElseThrow(
-			() -> new IllegalArgumentException("partyCapsule 엔티티가 존재하지 않음. partyCapsuleId = " + partyCapsuleId)
-		);
-
-		return new SignContractResponse(partyCapsule.getPartyMember().getEmail(), partyCapsule.getExpirationDate(),
-			partyCapsule.getParty().getOtt().getName(), partyCapsule.getParty().getOttAccountId(),
-			partyCapsule.getParty().getOttAccountPassword());
+	@Transactional
+	public void suspendPartyCapsule(final Long partyCapsuleId, final Long userId) {
+		PartyCapsule partyCapsule = findPartyCapsule(partyCapsuleId);
+		checkAuthority(userId, partyCapsule.getPartyMember().getId());
+		partyCapsule.deleteCapsule();
 	}
 }

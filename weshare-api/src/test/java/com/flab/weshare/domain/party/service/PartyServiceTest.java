@@ -258,4 +258,19 @@ class PartyServiceTest {
 			.extracting("errorCode")
 			.isEqualTo(ErrorCode.INSUFFICIENT_AUTHORITY);
 	}
+
+	@DisplayName("참여 하고자 하는 파티를 해지 할 수 있다.")
+	@Test
+	void suspend_partyCapsule() {
+		Long userId = 1L;
+		Long partyCapsuleId = 1L;
+
+		given(partyCapsuleRepository.findById(anyLong())).willReturn(Optional.of(mockPartyCapsule));
+		given(mockPartyCapsule.getPartyMember()).willReturn(mockUser);
+		given(mockUser.getId()).willReturn(userId);
+
+		partyService.suspendPartyCapsule(partyCapsuleId, userId);
+
+		then(mockPartyCapsule).should(times(1)).deleteCapsule();
+	}
 }
