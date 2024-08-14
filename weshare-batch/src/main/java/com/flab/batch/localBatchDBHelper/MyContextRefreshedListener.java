@@ -15,6 +15,6 @@ public class MyContextRefreshedListener implements ApplicationListener<ContextRe
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		batchDataGenerator.generateData();
+		batchDataGenerator.generateData(1000);
 	}
 }

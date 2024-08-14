@@ -11,13 +11,13 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.springframework.context.annotation.Profile;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import com.flab.core.entity.Card;
+import com.flab.core.entity.Money;
 import com.flab.core.entity.Ott;
 import com.flab.core.entity.Party;
 import com.flab.core.entity.PartyCapsule;
@@ -25,50 +25,74 @@ import com.flab.core.entity.PartyCapsuleStatus;
 import com.flab.core.entity.Role;
 import com.flab.core.entity.User;
 import com.flab.core.infra.CardRepository;
+import com.flab.core.infra.OttRepository;
+import com.flab.core.infra.PartyCapsuleRepository;
 import com.flab.core.infra.PartyRepository;
 import com.flab.core.infra.UserRepository;
 
+import jakarta.transaction.Transactional;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-@Profile("data-generate")
+@Getter
+@Profile({"data-generate", "test"})
 public class BatchDataGenerator {
 	private static final int BATCH_SIZE = 10000;
 
 	private final UserRepository userRepository;
 	private final PartyRepository partyRepository;
 	private final CardRepository cardRepository;
+	private final OttRepository ottRepository;
 	private final JdbcTemplate jdbcTemplate;
-	private final Ott[] ott = new Ott[8];
+	private final PartyCapsuleRepository partyCapsuleRepository;
+
+	private Ott ott;
+	private List<User> users;
+	private List<Card> cards;
+	private List<Party> parties;
+	private List<PartyCapsule> partyCapsules;
 
 	public BatchDataGenerator(UserRepository userRepository, PartyRepository partyRepository,
-		CardRepository cardRepository,
-		DataSource dataSource) {
+		CardRepository cardRepository, OttRepository ottRepository,
+		DataSource dataSource, PartyCapsuleRepository partyCapsuleRepository) {
 		this.userRepository = userRepository;
 		this.partyRepository = partyRepository;
 		this.cardRepository = cardRepository;
+		this.ottRepository = ottRepository;
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
-		for (int i = 1; i <= 7; i++) {
-			ott[i] = Ott.builder().id((long)i).build();
-		}
+		this.partyCapsuleRepository = partyCapsuleRepository;
 	}
 
-	public void generateData() {
-		long plusCount = 500000; // 추가하고자하는 파티캡슐의 갯수.
+	@Transactional
+	public void generateData(long cnt) {
+		long plusCount = cnt; // 추가하고자하는 파티캡슐의 갯수.
 
-		List<Card> cards = generateCards(plusCount);
-		Page<Card> savedCard = cardRepository.findAll(
-			PageRequest.of(0, cards.size(), Sort.by("id").descending()));
+		this.ott = Ott.builder()
+			.name("testOtt")
+			.maximumCapacity(4)
+			.minimumCapacity(1)
+			.perDayPrice(new Money(200))
+			.build();
 
-		List<User> users = generateMember(plusCount, savedCard.getContent());
-		Page<User> savedUsers = userRepository.findAll(
-			PageRequest.of(0, users.size(), Sort.by("id").descending()));
+		ottRepository.save(this.ott);
 
-		List<Party> parties = generateParty(savedUsers.getContent());
-		Page<Party> savedParty = partyRepository.findAll(
-			PageRequest.of(0, parties.size(), Sort.by("id").descending()));
-		generatePartyCapsules(savedUsers.getContent(), savedParty.getContent());
+		List<Card> savedCards = generateCards(plusCount);
+		this.cards = cardRepository.findAll(
+			PageRequest.of(0, savedCards.size(), Sort.by("id").descending())).getContent();
+
+		List<User> savedUsers = generateMember(plusCount, this.cards);
+		this.users = userRepository.findAll(
+			PageRequest.of(0, savedUsers.size(), Sort.by("id").descending())).getContent();
+
+		List<Party> savedParties = generateParty(this.users);
+		this.parties = partyRepository.findAll(
+			PageRequest.of(0, savedParties.size(), Sort.by("id").descending())).getContent();
+
+		List<PartyCapsule> savedPartyCapsules = generatePartyCapsules(this.users, this.parties);
+		this.partyCapsules = partyCapsuleRepository.findAll(
+			PageRequest.of(0, savedPartyCapsules.size(), Sort.by("id").descending())).getContent();
 	}
 
 	private List<PartyCapsule> generatePartyCapsules(List<User> users, List<Party> parties) {
@@ -92,7 +116,7 @@ public class BatchDataGenerator {
 		}
 
 		String sql =
-			"INSERT INTO weshare.party_capsule (created_date, modified_date, party_capsule_status, party_id, user_id,expiration_date, cancel_reservation, join_date, ott_id) "
+			"INSERT INTO party_capsule (created_date, modified_date, party_capsule_status, party_id, user_id,expiration_date, cancel_reservation, join_date, ott_id) "
 				+ "VALUES ('2024-07-20 15:59:04.000000', '2024-07-20 15:59:04.000000', ?, ?, ?, ?, ?, ?, ?)";
 
 		jdbcTemplate.batchUpdate(sql, partyCapsules, BATCH_SIZE, (ps, pc) -> {
@@ -117,7 +141,7 @@ public class BatchDataGenerator {
 		}
 
 		String sql =
-			"INSERT INTO weshare.card (card_number, billing_key, card_status, created_date, modified_date) "
+			"INSERT INTO card (card_number, billing_key, card_status, created_date, modified_date) "
 				+ "VALUES (?, ?, ?, '2024-07-20 15:59:04.000000', '2024-07-20 15:59:04.000000')";
 
 		jdbcTemplate.batchUpdate(sql, cards, BATCH_SIZE, (ps, card) -> {
@@ -135,7 +159,7 @@ public class BatchDataGenerator {
 		for (int i = 0; i < users.size(); i += 5) {
 			User user = users.get(i);
 			Party party = Party.builder()
-				.ott(ott[++ottRotation % 7 + 1])
+				.ott(this.ott)
 				.ottAccountId("testottAccountId" + user.getId())
 				.ottAccountPassword("testottAccountPassword" + user.getId())
 				.leader(user)
@@ -145,7 +169,7 @@ public class BatchDataGenerator {
 		}
 
 		String sql =
-			"INSERT INTO weshare.party (created_date, modified_date, capacity, ott_account_id, ott_account_password, party_status, user_id, ott_id)"
+			"INSERT INTO party (created_date, modified_date, capacity, ott_account_id, ott_account_password, party_status, user_id, ott_id)"
 				+ "VALUES ('2024-07-20 15:59:04.000000', '2024-07-20 15:59:04.000000', ?, ?, ?, ?, ?,?)";
 
 		jdbcTemplate.batchUpdate(sql, parties, BATCH_SIZE, (ps, party) -> {
@@ -176,7 +200,7 @@ public class BatchDataGenerator {
 		}
 
 		String sql =
-			"INSERT INTO weshare.users (created_date, modified_date, email, nick_name, password, role, telephone) "
+			"INSERT INTO users (created_date, modified_date, email, nick_name, password, role, telephone) "
 				+ "VALUES ('2024-07-20 15:59:04.000000', '2024-07-20 15:59:04.000000', ?,?,?,?,?)";
 
 		jdbcTemplate.batchUpdate(sql, users, BATCH_SIZE, (ps, user) -> {
@@ -188,5 +212,4 @@ public class BatchDataGenerator {
 		});
 		return users;
 	}
-
 }
