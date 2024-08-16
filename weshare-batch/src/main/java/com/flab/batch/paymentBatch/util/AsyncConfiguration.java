@@ -1,4 +1,4 @@
-package com.flab.batch.paymentBatch;
+package com.flab.batch.paymentBatch.util;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
