@@ -1,0 +1,72 @@
+spring:
+  config:
+    import: optional:file:../.env[.properties]
+  datasource:
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    url: jdbc:tc:mysql:8:///
+  batch:
+    job:
+      name: ${job.name:NONE}
+      enabled: false
+    jdbc:
+      initialize-schema: always
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_USER_NAME}
+    password: ${GMAIL_PASSWORD}
+    properties:
+      mail:
+        debug: true
+        smtp:
+          connectiontimeout: 5000
+          starttls:
+            enable: true
+            required: true
+          auth: false
+
+  jpa:
+    open-in-view: false
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+
+  sql:
+    init:
+      schema-locations: classpath:/sql/init.sql
+      mode: always
+
+jwt:
+  access_expiration_time: ${JWT_ACCESS_EXPIRATION_TIME}
+  refresh_expiration_time: ${JWT_REFRESH_EXPIRATION_TIME}
+  secret: ${JWT_SECRET}
+
+pay:
+  rest_application_id: ${REST_APPLICATION_ID}
+  private_key: ${PRIVATE_KEY}
+
+aes:
+  password: ${AES_PASSWORD}
+  salt: ${AES_SALT}
+
+async:
+  threadNamePrefix: 'async-thread-'
+  corePoolSize: 5
+  maxPoolSize: 100
+  queueCapacity: 10000
+  keepAliveSeconds: 30
+
+
+batch:
+  pay:
+    chunksize: 3
+    savepath: ${BATCH_PAY_SAVEPATH}
+    cachesize: ${BATCH_PAY_CACHESIZE}
+
+mail:
+  host: smtp.gmail.com
+  port: 587
+  username: ${GMAIL_USER_NAME}
+  password: ${GMAIL_PASSWORD}
