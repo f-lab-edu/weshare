@@ -5,15 +5,20 @@ import java.time.LocalDate;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flab.batch.paymentBatch.PayJobParameter;
+import com.flab.batch.paymentBatch.job.steps.executePaymentStep.ExecutePaymentStepConfiguration;
+import com.flab.batch.paymentBatch.job.steps.preBatchStep.OttReadStepConfiguration;
+import com.flab.batch.paymentBatch.job.steps.publishPaymentStep.PublishPaymentStepConfiguration;
+import com.flab.batch.paymentBatch.job.steps.updatePayResultFlow.UpdatePayResultFlowConfiguration;
+import com.flab.batch.paymentBatch.util.CustomRunIdIncrementer;
 import com.flab.core.entity.PartyCapsuleStatus;
 
 import lombok.RequiredArgsConstructor;
@@ -23,9 +28,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Configuration
 public class PaymentJobConfiguration {
+	private final OttReadStepConfiguration ottReadStepConfiguration;
 	private final PublishPaymentStepConfiguration publishPaymentStepConfiguration;
 	private final ExecutePaymentStepConfiguration executePaymentStepConfiguration;
-	private final UpdatePayResultStepConfiguration updatePayResultStepConfiguration;
+	private final UpdatePayResultFlowConfiguration updatePayResultFlowConfiguration;
 
 	@Bean
 	@JobScope
@@ -46,10 +52,13 @@ public class PaymentJobConfiguration {
 	@Bean
 	public Job initialPayJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
 		return new JobBuilder("paymentJob", jobRepository)
-			.incrementer(new RunIdIncrementer())
-			.start(publishPaymentStepConfiguration.initialPayStep(jobRepository, platformTransactionManager))
+			.incrementer(new CustomRunIdIncrementer())
+			.start(ottReadStepConfiguration.step(jobRepository, platformTransactionManager))
+			.next(publishPaymentStepConfiguration.initialPayStep(jobRepository, platformTransactionManager))
 			.next(executePaymentStepConfiguration.payStep(jobRepository, platformTransactionManager))
-			.next(updatePayResultStepConfiguration.updatePayResultStep(jobRepository, platformTransactionManager))
+			.split(new SimpleAsyncTaskExecutor())
+			.add(updatePayResultFlowConfiguration.successFlow(jobRepository, platformTransactionManager))
+			.end()
 			.build();
 	}
 }
