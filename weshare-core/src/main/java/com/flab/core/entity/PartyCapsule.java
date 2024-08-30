@@ -64,6 +64,7 @@ public class PartyCapsule extends BaseEntity {
 		return PartyCapsule.builder()
 			.party(party)
 			.partyCapsuleStatus(PartyCapsuleStatus.EMPTY)
+			.ott(party.getOtt())
 			.build();
 	}
 
