@@ -95,6 +95,7 @@ public abstract class BaseControllerTest {
 		PartyCapsule partyCapsule = PartyCapsule.builder()
 			.party(partyRepository.getReferenceById(savedParty.getId()))
 			.partyMember(savedUser)
+			.ott(savedParty.getOtt())
 			.partyCapsuleStatus(PartyCapsuleStatus.OCCUPIED)
 			.joinDate(LocalDate.now())
 			.build();
@@ -112,6 +113,7 @@ public abstract class BaseControllerTest {
 			PartyCapsule partyCapsule = PartyCapsule.builder()
 				.party(savedParty)
 				.partyMember(users.get(i))
+				.ott(savedParty.getOtt())
 				.partyCapsuleStatus(PartyCapsuleStatus.OCCUPIED)
 				.joinDate(LocalDate.now())
 				.build();
