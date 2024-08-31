@@ -9,7 +9,7 @@ subprojects {
     version = '0.0.1-SNAPSHOT'
     sourceCompatibility = '17'
     targetCompatibility = '17'
-    
+
     apply plugin: 'java'
     apply plugin: 'java-library'
     apply plugin: 'org.springframework.boot'
@@ -30,8 +30,8 @@ subprojects {
         implementation 'org.springframework.boot:spring-boot-starter-logging'
         implementation 'org.projectlombok:lombok'
         implementation 'org.springframework.boot:spring-boot-configuration-processor'
-        implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+//        implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+//        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
 
         testImplementation 'org.projectlombok:lombok'
@@ -65,22 +65,30 @@ project(':weshare-batch') { // 컴파일 시 multi-module-database 로딩
     dependencies {
         compileOnly project(':weshare-core')
         compileOnly project(':weshare-pay')
+        compileOnly project(':weshare-mail')
     }
 }
 
-project(':weshare-api') { // 컴파일 시 multi-module-database 로딩
+project(':weshare-api') {
     dependencies {
         compileOnly project(':weshare-core')
         compileOnly project(':weshare-pay')
     }
 }
 
-project(':weshare-core') { // 컴파일 시 multi-module-database 로딩
+project(':weshare-core') {
     bootJar { enabled = false }
     jar { enabled = true }
 }
 
-project(':weshare-pay') { // 컴파일 시 multi-module-database 로딩
+project(':weshare-pay') {
+    bootJar { enabled = false }
+    jar {
+        enabled = true
+    }
+}
+
+project(':weshare-mail') {
     bootJar { enabled = false }
     jar {
         enabled = true
