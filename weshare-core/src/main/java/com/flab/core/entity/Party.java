@@ -3,8 +3,6 @@ package com.flab.core.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.annotations.DynamicUpdate;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -25,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@DynamicUpdate
+//@DynamicUpdate
 @Getter
 public class Party extends BaseEntity {
 	@Id

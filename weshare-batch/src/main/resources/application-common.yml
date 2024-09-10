@@ -5,10 +5,25 @@ spring:
   batch:
     job:
       name: ${job.name:NONE}
+      enabled: false
 
     jdbc:
       initialize-schema: always
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_USER_NAME}
+    password: ${GMAIL_PASSWORD}
+    properties:
+      mail:
+        debug: true
+        smtp:
+          connectiontimeout: 5000
+          starttls:
+            enable: true
+            required: true
+          auth: false
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL}
@@ -26,6 +41,12 @@ pay:
 aes:
   password: ${AES_PASSWORD}
   salt: ${AES_SALT}
+
+mail:
+  host: smtp.gmail.com
+  port: 587
+  username: ${GMAIL_USER_NAME}
+  password: ${GMAIL_PASSWORD}
 
 batch:
   pay:

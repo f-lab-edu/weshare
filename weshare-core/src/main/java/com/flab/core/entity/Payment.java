@@ -42,15 +42,19 @@ public class Payment extends BaseEntity {
 	@OneToOne(mappedBy = "payment", fetch = FetchType.LAZY)
 	private PayResult payResult;
 
+	@Embedded
+	private PaymentResult paymentResult;
+
 	@Builder
-	public Payment(Long id, PartyCapsule partyCapsule, Card card, Money amount,
-		LocalDate payDate, PayResult payResult) {
+	public Payment(Long id, PartyCapsule partyCapsule, Card card, Money amount, LocalDate payDate, PayResult payResult,
+		PaymentResult paymentResult) {
 		this.id = id;
 		this.partyCapsule = partyCapsule;
 		this.card = card;
 		this.amount = amount;
 		this.payDate = payDate;
 		this.payResult = payResult;
+		this.paymentResult = paymentResult;
 	}
 
 	public static Payment generateEmptyPayment(final PartyCapsule partyCapsule, final Card card, final Money amount,

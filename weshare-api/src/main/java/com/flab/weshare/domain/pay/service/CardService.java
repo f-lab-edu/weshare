@@ -27,7 +27,7 @@ public class CardService {
 	public Long enrollCard(final CardEnrollRequest cardEnrollRequest, final Long userId) {
 		String billingKey = payService.enrollCard(generateCardInfo(cardEnrollRequest), userId);
 		String encryptCardNumber = aesBytesEncryptUtil.encrypt(cardEnrollRequest.cardNumber());
-		Card newCard = Card.buildNewCard(userRepository.getReferenceById(userId), billingKey, encryptCardNumber);
+		Card newCard = Card.buildNewCard(billingKey, encryptCardNumber);
 		return cardRepository.save(newCard).getId();
 	}
 

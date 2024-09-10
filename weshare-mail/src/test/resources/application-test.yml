@@ -1,0 +1,21 @@
+spring:
+  config:
+    import: optional:file:../.env[.properties]
+  mail:
+    properties:
+      mail:
+        debug: true
+        smtp:
+          connectiontimeout: 5000
+          starttls:
+            enable: true
+            required: true
+          auth: false
+
+mail:
+  host: smtp.gmail.com
+  port: 587
+  username: ${GMAIL_USER_NAME}
+  password: ${GMAIL_PASSWORD}
+
+

@@ -51,7 +51,7 @@ public abstract class BaseRepositoryTest {
 		userRepository.save(savedUser);
 		userRepository.saveAll(members);
 
-		Ott testOtt = generteOtt();
+		Ott testOtt = generateOtt();
 		ottRepository.save(testOtt);
 		savedParty = generteParty(testOtt);
 		partyRepository.save(savedParty);
@@ -101,7 +101,7 @@ public abstract class BaseRepositoryTest {
 			.build();
 	}
 
-	private Ott generteOtt() {
+	private Ott generateOtt() {
 		Ott testOtt = Ott.builder()
 			.name("test")
 			.perDayPrice(new Money(1000))
@@ -126,5 +126,4 @@ public abstract class BaseRepositoryTest {
 		}
 		return members;
 	}
-
 }

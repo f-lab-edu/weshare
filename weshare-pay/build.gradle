@@ -7,4 +7,5 @@ jar {
 
 dependencies {
     implementation 'io.github.bootpay:backend:+'
+    implementation 'org.springframework.boot:spring-boot-starter'
 }

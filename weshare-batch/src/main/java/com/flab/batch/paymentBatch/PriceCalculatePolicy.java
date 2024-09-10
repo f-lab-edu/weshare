@@ -5,7 +5,7 @@ import java.time.temporal.ChronoUnit;
 
 import org.springframework.stereotype.Component;
 
-import com.flab.batch.paymentBatch.exception.CalculatePayException;
+import com.flab.batch.paymentBatch.job.exception.CalculatePayException;
 import com.flab.core.entity.Money;
 
 @Component

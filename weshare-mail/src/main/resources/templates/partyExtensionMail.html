@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>weshare-ott 연장</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #333333;
+        }
+
+        .content {
+            padding: 20px;
+            color: #555555;
+            line-height: 1.6;
+        }
+
+        .content h2 {
+            color: #333333;
+            font-size: 20px;
+        }
+
+        .content p {
+            margin: 10px 0;
+        }
+
+        .button {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 10px 0;
+            text-align: center;
+            background-color: #007BFF;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #888888;
+            border-top: 1px solid #eeeeee;
+        }
+
+        .footer a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        table {
+            width: 60%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #d3d1d1;
+            color: #000000;
+            font-weight: 600;
+            border-bottom: 1px solid white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        td {
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+
+<body>
+<div class="email-container">
+    <!-- Header -->
+    <div class="header">
+        <h1>Weshare Ott 구독 결제 승인 안내</h1>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <div style="text-align: center"><img
+                src="https://github.com/f-lab-edu/weshare/assets/105799662/84bf1ad1-136b-4373-837a-6e6683208785"
+                style="max-width: 300px;"></div>
+        <table>
+            <tr>
+                <th>구독 중인 OTT명</th>
+                <td th:text="${mailInfo.ottName()}">Netflix</td>
+            </tr>
+            <tr>
+                <th>지난 만료 일자</th>
+                <td th:text="${#temporals.format(mailInfo.previousExpirationDate(),'yyyy년 MM월 dd일')}">2024.06.01</td>
+            </tr>
+            <tr>
+                <th>갱신된 만료 일자</th>
+                <td th:text="${#temporals.format(mailInfo.renewalDate(),'yyyy년 MM월 dd일')}">2024.07.01</td>
+            </tr>
+            <tr>
+                <th>결제금액</th>
+                <td th:text="${mailInfo.price() + '원'}"></td>
+            </tr>
+            <tr>
+                <th>결제 승인일</th>
+                <td th:text="${#temporals.format(mailInfo.paymentDate(),'yyyy년 MM월 dd일')}">2024.06.30</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Weshare</p>
+    </div>
+</div>
+</body>
+
+</html>
