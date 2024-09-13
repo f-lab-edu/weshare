@@ -1,0 +1,7 @@
+pay:
+  toss:
+    secret_key: ${PAY_TOSS_SECRET_KEY}
+    client_key: ${PAY_TOSS_CLIENT_KEY}
+    auth_key: ${{PAY_TOSS_AUTH_KEY}
+
+

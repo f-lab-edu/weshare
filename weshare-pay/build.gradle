@@ -6,6 +6,6 @@ jar {
 }
 
 dependencies {
-    implementation 'io.github.bootpay:backend:+'
     implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
 }
