@@ -12,13 +12,13 @@ import org.springframework.security.config.annotation.web.configurers.CorsConfig
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
 import com.flab.weshare.utils.jwt.JwtAuthorizationFilter;
 import com.flab.weshare.utils.jwt.JwtExceptionHandlerFilter;
 import com.flab.weshare.utils.jwt.RestAuthenticationEntryPoint;
-import com.flab.weshare.utils.securityUtils.MyAccessDeniedHandler;
-import com.flab.weshare.utils.securityUtils.MyAuthenticationEntryPoint;
+import com.flab.weshare.utils.securityUtils.NotFoundFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,9 +28,8 @@ public class SecurityConfiguration {
 	private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 	private final JwtAuthorizationFilter jwtAuthorizationFilter;
 	private final JwtExceptionHandlerFilter jwtExceptionHandlerFilter;
-	private final MyAccessDeniedHandler myAccessDeniedHandler;
-	private final MyAuthenticationEntryPoint myAuthenticationEntryPoint;
-	
+	private final NotFoundFilter notFoundFilter;
+
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		return http
@@ -45,20 +44,24 @@ public class SecurityConfiguration {
 				.permitAll()
 				.requestMatchers("/swagger/*").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/*/user").permitAll()
+				.requestMatchers(HttpMethod.POST, "/api/*/user/rewrite").permitAll()
 				.requestMatchers("/api/*/user/check-*").permitAll()
 				.requestMatchers("/api/login").permitAll()
+				.requestMatchers("/favicon.ico").permitAll()
 				.requestMatchers("/api/access-dev").permitAll()
 				.requestMatchers("/error").permitAll()
+				.requestMatchers("/api/*/issue-billingKey").permitAll()
+				.requestMatchers(HttpMethod.GET, "/testBilling.html").permitAll()
+				.requestMatchers(HttpMethod.GET, "/fail.html").permitAll()
 				.anyRequest()
 				.authenticated()
 			)
+			.addFilterBefore(notFoundFilter, SecurityContextHolderFilter.class)
 			.addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(jwtExceptionHandlerFilter, JwtAuthorizationFilter.class)
 			.exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
 				httpSecurityExceptionHandlingConfigurer
-					.authenticationEntryPoint(myAuthenticationEntryPoint)
-					.authenticationEntryPoint(restAuthenticationEntryPoint)
-					.accessDeniedHandler(myAccessDeniedHandler))
+					.authenticationEntryPoint(restAuthenticationEntryPoint))
 			.build();
 	}
 
