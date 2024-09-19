@@ -17,6 +17,7 @@ public class ErrorCode {
 	public static final ErrorCode WRONG_PASSWORD = new ErrorCode("WRONG_PASSWORD", "비밀번호가 일치하지 않습니다.");
 	public static final ErrorCode INVALID_REFRESH_TOKEN = new ErrorCode("INVALID_REFRESH_TOKEN",
 		"사용할 수 없는 리프레쉬 토큰입니다.");
+	public static final ErrorCode NOT_AUTHORIZED_USER = new ErrorCode("NOT_AUTHORIZED_USER", "재발급 받을 수 없는 회원입니다");
 	public static final ErrorCode MALFORMED_JWT = new ErrorCode("MALFORMED_JWT", "잘못된 JWT 서명입니다.");
 	public static final ErrorCode EXPIRED_JWT = new ErrorCode("EXPIRED_JWT", "만료된 JWT 토큰입니다.");
 	public static final ErrorCode UNSUPPORTED_JWT = new ErrorCode("UNSUPPORTED_JWT", "지원되지 않는 JWT 토큰입니다.");
@@ -34,6 +35,7 @@ public class ErrorCode {
 	public static final ErrorCode VALIDATION_ERROR = new ErrorCode("VALIDATION_ERROR", NICKNAME_MESSAGE);
 
 	public static final ErrorCode TOO_EARLY_REQUEST = new ErrorCode("EARLY_REQUEST", "이메일 요청 허용시간을 만족하지 못했습니다.");
+	public static final ErrorCode NOT_FOUND = new ErrorCode("NOT_FOUND", "요청한 리소스를 찾을 수 없습니다.");
 
 	private final String errorCode;
 	private final String errorMessage;
