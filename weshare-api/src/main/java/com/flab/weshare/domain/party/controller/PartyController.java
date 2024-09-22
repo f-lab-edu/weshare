@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -114,6 +115,24 @@ public class PartyController {
 	public BaseResponse deletePartyCapsule(
 		@PathVariable final Long partyCapsuleId, @AuthenticationPrincipal final JwtAuthentication jwtAuthentication) {
 		partyService.suspendPartyCapsule(partyCapsuleId, jwtAuthentication.getId());
+		return BaseResponse.success();
+	}
+
+	@GetMapping("/{partyId}/ottAccountInfo")
+	@ResponseStatus(HttpStatus.OK)
+	public BaseResponse getPartyAccountInfo(@PathVariable final Long partyId,
+		@RequestParam final boolean isLeader,
+		@AuthenticationPrincipal final JwtAuthentication jwtAuthentication) {
+		partyService.sendOttAccountInfoToUserEmail(partyId, jwtAuthentication.getId(), isLeader);
+		return BaseResponse.success();
+	}
+
+	@PutMapping("/{partyId}/changePassword")
+	@ResponseStatus(HttpStatus.OK)
+	public BaseResponse getPartyAccountInfo(@PathVariable final Long partyId,
+		@RequestParam final String changingPassword,
+		@AuthenticationPrincipal final JwtAuthentication jwtAuthentication) {
+		partyService.changeOttPassword(partyId, jwtAuthentication.getId(), changingPassword);
 		return BaseResponse.success();
 	}
 }
