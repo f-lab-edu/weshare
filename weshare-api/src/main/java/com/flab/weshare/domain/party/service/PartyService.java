@@ -2,7 +2,9 @@ package com.flab.weshare.domain.party.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,7 @@ import com.flab.weshare.exception.ErrorCode;
 import com.flab.weshare.exception.exceptions.CommonClientException;
 import com.flab.weshare.exception.exceptions.CommonNotFoundException;
 import com.flab.weshare.exception.exceptions.UnsatisfiedAuthorityException;
+import com.flab.weshare.utils.AesBytesEncryptUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,12 +41,18 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class PartyService {
+	private static final String PARTY_RESOURCE_NAME = "party";
+	private static final String PARTY_CAPSULE_RESOURCE_NAME = "party capsule";
+
 	private final PartyRepository partyRepository;
 	private final PartyCapsuleRepository partyCapsuleRepository;
 	private final PartyJoinRepository partyJoinRepository;
 	private final OttRepository ottRepository;
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final AesBytesEncryptUtil aesBytesEncryptUtil;
+	private final RedisTemplate<String, String> redisTemplate;
+	private final MailPublisher mailPublisher;
 
 	@Transactional
 	public Long generateParty(final PartyCreationRequest partyCreationRequest, final Long requestPartyLeaderId) {
@@ -53,7 +62,7 @@ public class PartyService {
 		validateCapacity(requestOtt, partyCreationRequest.capacity());
 
 		User requestPartyLeader = userRepository.getReferenceById(requestPartyLeaderId);
-		String encodedPassword = passwordEncoder.encode(partyCreationRequest.ottAccountPassword());
+		String encodedPassword = aesBytesEncryptUtil.encrypt(partyCreationRequest.ottAccountPassword());
 		Party generatedParty = saveParty(partyCreationRequest, requestOtt, requestPartyLeader, encodedPassword);
 
 		savePartyCapsules(partyCreationRequest.capacity(), generatedParty);
@@ -214,6 +223,70 @@ public class PartyService {
 	public void suspendPartyCapsule(final Long partyCapsuleId, final Long userId) {
 		PartyCapsule partyCapsule = findPartyCapsule(partyCapsuleId);
 		checkAuthority(userId, partyCapsule.getPartyMember().getId());
-		partyCapsule.deleteCapsule();
+		partyCapsule.cancelReservation();
+	}
+
+	@Transactional(readOnly = true)
+	public void sendOttAccountInfoToUserEmail(final Long partyId, final Long userId, final boolean isLeader) {
+		Party party = partyRepository.findPartyAndOccupiedPartyCapsules(partyId)
+			.orElseThrow(() -> new CommonNotFoundException(ErrorCode.makeSpecificResourceNotFoundErrorCode("party ")));
+
+		validateRequestAuthority(userId, isLeader, party);
+		checkRepeatable(partyId, userId);
+
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new CommonNotFoundException(ErrorCode.makeSpecificResourceNotFoundErrorCode("user ")));
+
+		//async
+		publishOttAccountInfoMail(user, party);
+	}
+
+	@Transactional
+	public void changeOttPassword(final Long partyId, final Long userId, final String password) {
+		Party party = partyRepository.findPartyAndOccupiedPartyCapsules(partyId)
+			.orElseThrow(() -> new CommonNotFoundException(ErrorCode.makeSpecificResourceNotFoundErrorCode("party ")));
+
+		validateRequestAuthority(userId, true, party);
+		party.changePassword(aesBytesEncryptUtil.encrypt(password));
+
+		party.getPartyCapsules().forEach(partyCapsule -> {
+			publishOttAccountInfoMail(partyCapsule.getPartyMember(), party);
+		});
+	}
+
+	private void publishOttAccountInfoMail(User user, Party party) {
+		mailPublisher.publishAccountInfoMessage(user.getEmail(), party.getOttAccountId(),
+			aesBytesEncryptUtil.decrypt(party.getOttAccountPassword()), party.getOtt().getName());
+	}
+
+	private void checkRepeatable(Long partyId, Long userId) {
+		String complicatedKeyString = makeComplicatedKeyString(partyId, userId);
+		if (!isAcceptedRequestForSendAccountInfoEmail(complicatedKeyString)) {
+			throw new CommonClientException(ErrorCode.TOO_EARLY_REQUEST);
+		}
+
+	}
+
+	private boolean isAcceptedRequestForSendAccountInfoEmail(String complicatedKeyString) {
+		return Boolean.TRUE.equals(
+			redisTemplate.opsForValue().setIfAbsent(complicatedKeyString, "1", 24, TimeUnit.HOURS));
+	}
+
+	private String makeComplicatedKeyString(final Long partyId, final Long userId) {
+		return String.format("userId:%s:partyId=%s", partyId, userId);
+	}
+
+	private void validateRequestAuthority(Long userId, boolean isLeader, Party party) {
+		if (isLeader) {
+			checkAuthority(userId, party.getLeader().getId());
+		} else {
+			boolean isPartyMember = party.getPartyCapsules()
+				.stream()
+				.anyMatch(partyCapsule -> partyCapsule.getPartyMember().getId().equals(userId));
+
+			if (!isPartyMember) {
+				throw new UnsatisfiedAuthorityException(ErrorCode.INSUFFICIENT_AUTHORITY);
+			}
+		}
 	}
 }
