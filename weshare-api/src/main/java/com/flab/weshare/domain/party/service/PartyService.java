@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,8 @@ import com.flab.core.infra.PartyCapsuleRepository;
 import com.flab.core.infra.PartyJoinRepository;
 import com.flab.core.infra.PartyRepository;
 import com.flab.core.infra.UserRepository;
+import com.flab.mail.mail.service.MailPublisher;
+import com.flab.weshare.config.cacheConfig.CacheNames;
 import com.flab.weshare.domain.party.dto.LeadingPartySummary;
 import com.flab.weshare.domain.party.dto.ModifyPartyRequest;
 import com.flab.weshare.domain.party.dto.ParticipatedPartyDto;
@@ -173,6 +176,7 @@ public class PartyService {
 		}
 	}
 
+	@Cacheable(value = CacheNames.PARTY_TOTAL, key = "#userId")
 	@Transactional(readOnly = true)
 	public ParticipatedPartyDto findAllParticipatedParties(final Long userId) {
 		log.info("userId {}", userId);
@@ -190,6 +194,7 @@ public class PartyService {
 		return new ParticipatedPartyDto(leadingPartySummaries, participatingPartySummaries);
 	}
 
+	@Cacheable(value = CacheNames.PARTY_INFO, key = "#partyId")
 	@Transactional(readOnly = true)
 	public PartyInfo getPartyInfo(Long partyId, Long userId) {
 		Party party = partyRepository.findFetchByPartyId(partyId)
@@ -198,6 +203,7 @@ public class PartyService {
 		return PartyInfo.of(party);
 	}
 
+	@Cacheable(value = CacheNames.PARTY_CAPSULE_INFO, key = "#partyCapsuleId")
 	@Transactional(readOnly = true)
 	public PartyCapsuleInfo getPartyCapsuleInfo(Long partyCapsuleId, Long userId) {
 		PartyCapsule partyCapsule = partyCapsuleRepository.findPartyCapsuleById(partyCapsuleId)
