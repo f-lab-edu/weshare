@@ -43,8 +43,7 @@ public class UserController {
 	@GetMapping("/check-nickname")
 	public BaseResponse checkNickName(@RequestParam @NotNull String nickname) {
 		validateParameter(NICKNAME_PATTERN, nickname, NICKNAME_MESSAGE);
-		DuplicateCheckResponse duplicateCheckResponse = userService.emailDuplicateCheck(nickname);
-
+		DuplicateCheckResponse duplicateCheckResponse = userService.nickNameDuplicateCheck(nickname);
 		return BaseResponse.success(duplicateCheckResponse);
 	}
 
