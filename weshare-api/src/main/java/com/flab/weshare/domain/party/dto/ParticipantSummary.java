@@ -9,14 +9,14 @@ import lombok.Builder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Builder
-public record ParticipantSummary(String nickName, LocalDate startDate, String status) {
+public record ParticipantSummary(String nickName, LocalDate joinDate, String status) {
 	public static ParticipantSummary of(PartyCapsule partyCapsule) {
 		if (partyCapsule.isEmptyCapsule()) {
 			return ParticipantSummary.builder().status("empty").build();
 		}
 		return ParticipantSummary.builder()
 			.nickName(partyCapsule.getPartyMember().getNickName())
-			.startDate(partyCapsule.getJoinDate())
+			.joinDate(partyCapsule.getJoinDate())
 			.status("occupied").build();
 	}
 }
