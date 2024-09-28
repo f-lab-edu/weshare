@@ -6,7 +6,6 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,8 +30,10 @@ import com.flab.core.infra.OttRepository;
 import com.flab.core.infra.PartyCapsuleRepository;
 import com.flab.core.infra.PartyRepository;
 import com.flab.core.infra.UserRepository;
+import com.flab.weshare.config.RabbitMQContainerConfig;
 import com.flab.weshare.config.RedisTestContainerConfig;
 import com.flab.weshare.config.TestContainerConfig;
+import com.flab.weshare.domain.auth.service.TokenManager;
 import com.flab.weshare.utils.AesBytesEncryptUtil;
 import com.flab.weshare.utils.jwt.JwtProperties;
 import com.flab.weshare.utils.jwt.JwtUtil;
@@ -42,13 +43,16 @@ import jakarta.persistence.EntityManager;
 @ActiveProfiles(value = "test")
 @Transactional
 @ExtendWith({RedisTestContainerConfig.class})
-@Import({TestContainerConfig.class})
+@Import({TestContainerConfig.class, RabbitMQContainerConfig.class})
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs
 public abstract class BaseControllerTest {
 	@Autowired
 	protected MockMvc mockMvc;
+
+	@Autowired
+	protected TokenManager tokenManager;
 
 	@Autowired
 	protected ObjectMapper objectMapper;
@@ -114,12 +118,7 @@ public abstract class BaseControllerTest {
 		userRepository.save(savedUser);
 		ACCESS_TOKEN = JwtProperties.TOKEN_PREFIX + jwtUtil.createAccessToken(savedUser.getId());
 		REFRESH_TOKEN = JwtProperties.TOKEN_PREFIX + jwtUtil.createRefreshToken(savedUser.getId());
-		redisTemplate.opsForValue().set(
-			String.valueOf(savedUser.getId()),
-			REFRESH_TOKEN.replace(JwtProperties.TOKEN_PREFIX, ""),
-			10000000,
-			TimeUnit.MILLISECONDS
-		);
+		tokenManager.saveToken(savedUser.getId(), REFRESH_TOKEN.replace(JwtProperties.TOKEN_PREFIX, ""));
 	}
 
 	@BeforeEach
