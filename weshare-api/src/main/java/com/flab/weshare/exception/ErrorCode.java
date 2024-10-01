@@ -1,8 +1,12 @@
 package com.flab.weshare.exception;
 
+import static com.flab.weshare.utils.RegEx.Message.*;
+
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
+@ToString
 public class ErrorCode {
 	public static final ErrorCode INTRENAL_SERVER_ERROR = new ErrorCode("internal_server_error", "서버에 에러가 발생했습니다.");
 	public static final ErrorCode DUPLICATE_EMAIL = new ErrorCode("duplicate_email", "이미 존재하는 이메일입니다.");
@@ -27,6 +31,9 @@ public class ErrorCode {
 		"카드 등록에 실패했습니다.");
 	public static final ErrorCode INSUFFICIENT_AUTHORITY = new ErrorCode("INSUFFICIENT_AUTHORITY",
 		"권한이 부족한 요청입니다.");
+	public static final ErrorCode VALIDATION_ERROR = new ErrorCode("VALIDATION_ERROR", NICKNAME_MESSAGE);
+
+	public static final ErrorCode TOO_EARLY_REQUEST = new ErrorCode("EARLY_REQUEST", "이메일 요청 허용시간을 만족하지 못했습니다.");
 
 	private final String errorCode;
 	private final String errorMessage;
@@ -38,6 +45,10 @@ public class ErrorCode {
 
 	public static ErrorCode makeSpecificResourceNotFoundErrorCode(String resourceName) {
 		return new ErrorCode(RESOURCE_NOT_FOUND.errorCode, resourceName + RESOURCE_NOT_FOUND.errorMessage);
+	}
+
+	public static ErrorCode makeValidationErrorMessage(String message) {
+		return new ErrorCode(VALIDATION_ERROR.errorCode, message);
 	}
 
 	@Override
