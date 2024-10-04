@@ -65,9 +65,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 	}
 
 	private void logInvalidTokenException(Exception e, String token) {
-		log.info("exception : {} "
-				+ "token : {}"
-			, e.getClass().getSimpleName(), token);
+		log.info("exception : {} token : {}", e.getClass().getSimpleName(), token);
 	}
 
 	private boolean isRefreshTokenBasedRequest(HttpServletRequest request, JwtHolder jwtHolder) {
