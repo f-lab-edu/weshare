@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  weshare-local:
+    container_name: weshare-local
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    ports:
+      - "8082:8082"
+    env_file:
+      - .env
+    environment:
+      - SERVER_PORT=8082
+    networks:
+      - my-network
+      - springboot-network
+
+  swagger:
+    container_name: local-swagger
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8081:8080"
+    restart: on-failure
+    environment:
+      - URLS=
+        [
+        {url:'http://localhost:8082/swagger/openapi3.yaml',name:'Test'},
+        ]
+    depends_on:
+      - weshare-local
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
+  springboot-network:
+    external: true
+
+
