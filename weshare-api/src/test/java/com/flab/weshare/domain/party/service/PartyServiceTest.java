@@ -72,7 +72,7 @@ class PartyServiceTest {
 		PartyCreationRequest partyCreationRequest = new PartyCreationRequest(
 			1L, OTT_ACCOUNT_ID, OTT_PASSWORD, PARTY_MAXIMUM_CAPACITY);
 
-		given(ottRepository.findById(anyLong())).willReturn(Optional.of(savedOtt));
+		given(ottRepository.findById(anyLong())).willReturn(Optional.ofNullable(savedOtt));
 		given(userRepository.getReferenceById(anyLong())).willReturn(savedUser);
 
 		ReflectionTestUtils.setField(savedOtt, "id", 1L);
@@ -111,7 +111,7 @@ class PartyServiceTest {
 		PartyCreationRequest partyCreationRequest = new PartyCreationRequest(
 			1L, OTT_ACCOUNT_ID, OTT_PASSWORD, MAXIMUM_CAPACITY + 1);
 
-		given(ottRepository.findById(anyLong())).willReturn(Optional.of(savedOtt));
+		given(ottRepository.findById(anyLong())).willReturn(Optional.ofNullable(savedOtt));
 
 		assertThatThrownBy(() -> partyService.generateParty(partyCreationRequest, 1L))
 			.isInstanceOf(CommonClientException.class)
@@ -128,7 +128,7 @@ class PartyServiceTest {
 
 		ModifyPartyRequest modifyPartyRequest = new ModifyPartyRequest(newCapacity, PASSWORD);
 
-		given(partyRepository.findFetchByPartyId(anyLong())).willReturn(Optional.of(mockParty));
+		given(partyRepository.findFetchByPartyId(anyLong())).willReturn(Optional.ofNullable(mockParty));
 		given(mockParty.getOtt()).willReturn(savedOtt); //현재 ott 최대 정원 : 4
 		given(mockParty.countOccupiedPartyCapsule()).willReturn(occupiedCapsuleCount); //현재 파티에 참여 중인 인원 : 2
 		given(mockParty.getCapsulesSize()).willReturn(partyCapsuleSize); // 전체 캡슐수 : 3 빈 캡슐 : 1 상황 가정
@@ -177,7 +177,7 @@ class PartyServiceTest {
 
 		ModifyPartyRequest modifyPartyRequest = new ModifyPartyRequest(newCapacity, PASSWORD);
 
-		given(partyRepository.findFetchByPartyId(anyLong())).willReturn(Optional.of(mockParty));
+		given(partyRepository.findFetchByPartyId(anyLong())).willReturn(Optional.ofNullable(mockParty));
 		given(mockParty.getOtt()).willReturn(savedOtt);
 		given(mockParty.countOccupiedPartyCapsule()).willReturn(occupiedCapsuleCount);
 
@@ -223,7 +223,7 @@ class PartyServiceTest {
 		Long userId = 1L;
 		Long partyId = 1L;
 
-		given(partyRepository.findFetchByPartyId(anyLong())).willReturn(Optional.of(mockParty));
+		given(partyRepository.findFetchByPartyId(anyLong())).willReturn(Optional.ofNullable(mockParty));
 		given(mockParty.getLeader()).willReturn(mockUser);
 		given(mockUser.getId()).willReturn(userId + 1L);
 
@@ -253,7 +253,7 @@ class PartyServiceTest {
 		Long userId = 1L;
 		Long partyId = 1L;
 
-		given(partyCapsuleRepository.findPartyCapsuleById(anyLong())).willReturn(Optional.of(mockPartyCapsule));
+		given(partyCapsuleRepository.findPartyCapsuleById(anyLong())).willReturn(Optional.ofNullable(mockPartyCapsule));
 		given(mockPartyCapsule.getPartyMember()).willReturn(mockUser);
 		given(mockUser.getId()).willReturn(userId + 1L);
 
@@ -269,7 +269,7 @@ class PartyServiceTest {
 		Long userId = 1L;
 		Long partyCapsuleId = 1L;
 
-		given(partyCapsuleRepository.findById(anyLong())).willReturn(Optional.of(mockPartyCapsule));
+		given(partyCapsuleRepository.findById(anyLong())).willReturn(Optional.ofNullable(mockPartyCapsule));
 		given(mockPartyCapsule.getPartyMember()).willReturn(mockUser);
 		given(mockUser.getId()).willReturn(userId);
 

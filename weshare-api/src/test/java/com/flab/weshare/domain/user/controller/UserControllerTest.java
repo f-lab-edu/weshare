@@ -38,6 +38,12 @@ class UserControllerTest extends BaseControllerTest {
 			.and(fieldWithPath("data.isDuplicated").description("중복 여부"));
 
 	@Test
+	void dd() throws Exception {
+		mockMvc.perform(get("/no"))
+			.andDo(print());
+	}
+
+	@Test
 	void signup_test() throws Exception {
 		mockMvc.perform(post("/api/v1/user")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -109,7 +115,7 @@ class UserControllerTest extends BaseControllerTest {
 						.description("닉네임 중복확인")
 						.queryParameters(new ParameterDescriptorWithType("nickname").description("중복확인 닉네임"))
 						.responseFields(duplicatedCheckFields)
-						.build()
-				)));
+						.build())
+			));
 	}
 }
