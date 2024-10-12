@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.flab.weshare.domain.base.BaseResponse;
+import com.flab.weshare.domain.base.ErrorResponse;
 import com.flab.weshare.domain.user.dto.DuplicateCheckResponse;
 import com.flab.weshare.domain.user.dto.SignUpRequest;
 import com.flab.weshare.domain.user.service.UserService;
@@ -53,6 +54,12 @@ public class UserController {
 		validateParameter(EMAIL_PATTERN, email, EMAIL_MESSAGE);
 		DuplicateCheckResponse duplicateCheckResponse = userService.emailDuplicateCheck(email);
 		return BaseResponse.success(duplicateCheckResponse);
+	}
+
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	@GetMapping("/error")
+	public BaseResponse checkNotFoundError() {
+		return BaseResponse.fail(ErrorResponse.of(ErrorCode.WRONG_PASSWORD));
 	}
 
 	private void validateParameter(String regEx, String target, String message) {
