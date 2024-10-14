@@ -32,6 +32,7 @@ import com.flab.weshare.exception.ErrorCode;
 import com.flab.weshare.exception.exceptions.CommonClientException;
 import com.flab.weshare.exception.exceptions.CommonNotFoundException;
 import com.flab.weshare.exception.exceptions.UnsatisfiedAuthorityException;
+import com.flab.weshare.utils.AesBytesEncryptUtil;
 
 @ExtendWith(MockitoExtension.class)
 class PartyServiceTest {
@@ -52,6 +53,9 @@ class PartyServiceTest {
 
 	@Mock
 	PasswordEncoder passwordEncoder;
+
+	@Mock
+	AesBytesEncryptUtil aesBytesEncryptUtil;
 
 	@Mock
 	private Party mockParty;
@@ -271,6 +275,6 @@ class PartyServiceTest {
 
 		partyService.suspendPartyCapsule(partyCapsuleId, userId);
 
-		then(mockPartyCapsule).should(times(1)).deleteCapsule();
+		then(mockPartyCapsule).should(times(1)).cancelReservation();
 	}
 }
