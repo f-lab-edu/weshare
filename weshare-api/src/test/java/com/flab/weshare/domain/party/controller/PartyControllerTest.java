@@ -75,7 +75,6 @@ class PartyControllerTest extends BaseControllerTest {
 		.and(fieldWithPath("data.startDate").description("파티 생성 날짜"))
 		.and(fieldWithPath("data.ottName").description("파티의 ott명"))
 		.and(fieldWithPath("data.ottAccountId").description("ott 계정 id"))
-		.and(fieldWithPath("data.ottAccountPassword").description("ott 계정 비밀번호"))
 		.and(fieldWithPath("data.participants[]").description("파티의 ott명"))
 		.and(fieldWithPath("data.participants[].nickName").type(STRING).description("참석자 닉네임").optional())
 		.and(fieldWithPath("data.participants[].joinDate").type(STRING).description("참석자의 파티 참가 날짜").optional())
@@ -113,7 +112,6 @@ class PartyControllerTest extends BaseControllerTest {
 					ResourceSnippetParameters.builder()
 						.tag("파티 API")
 						.description("파티를 생성할 수 있다.")
-						.requestHeaders(jwtHeader)
 						.requestFields(partyCreationSchema)
 						.responseFields(basicResponseFields)
 						.build()
@@ -154,7 +152,6 @@ class PartyControllerTest extends BaseControllerTest {
 					ResourceSnippetParameters.builder()
 						.tag("파티 API")
 						.description("파티의 정원과 ott 계정의 비밀번호를 변경할 수 있다.")
-						.requestHeaders(jwtHeader)
 						.pathParameters(
 							new ParameterDescriptorWithType("partyId")
 								.description("수정하려고하는 파티의 id")
@@ -257,7 +254,6 @@ class PartyControllerTest extends BaseControllerTest {
 					ResourceSnippetParameters.builder()
 						.tag("파티 API")
 						.description("가입 되어있는 모든 파티의 목록을 조회 할 수 있다.")
-						.requestHeaders(jwtHeader)
 						.responseFields(getPartyListFields)
 						.build()
 				)));
@@ -285,7 +281,6 @@ class PartyControllerTest extends BaseControllerTest {
 			.andExpect(jsonPath("$.data.startDate").value("2024-03-27"))
 			.andExpect(jsonPath("$.data.ottName").value("아마존 프라임"))
 			.andExpect(jsonPath("$.data.ottAccountId").value("asdfdf"))
-			.andExpect(jsonPath("$.data.ottAccountPassword").value("adsf22"))
 			.andDo(responsePrettyPrint())
 			.andDo(MockMvcRestDocumentationWrapper.document("파티 상세 조회",
 				preRequestProcessorWithAuthorization,
@@ -298,7 +293,6 @@ class PartyControllerTest extends BaseControllerTest {
 							new ParameterDescriptorWithType("partyId")
 								.description("조회하고자 하는 파티의 id")
 						)
-						.requestHeaders(jwtHeader)
 						.responseFields(getPartyDetails)
 						.build()
 				)));
@@ -324,7 +318,6 @@ class PartyControllerTest extends BaseControllerTest {
 							new ParameterDescriptorWithType("partyCapsuleId")
 								.description("참석하고 있는 파티 정보의 id")
 						)
-						.requestHeaders(jwtHeader)
 						.responseFields(getPartyCapsuleDetails)
 						.build()
 				)));
@@ -339,6 +332,7 @@ class PartyControllerTest extends BaseControllerTest {
 				.header(JwtProperties.HEADER, accessToken)
 				.contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.success").value("true"))
 			.andDo(MockMvcRestDocumentationWrapper.document("참여 중인 파티 해지 API",
 				preRequestProcessorWithAuthorization,
 				preResponseProcessor
@@ -350,7 +344,63 @@ class PartyControllerTest extends BaseControllerTest {
 							new ParameterDescriptorWithType("partyCapsuleId")
 								.description("해지 하고자 하는 참석 파티")
 						)
-						.requestHeaders(jwtHeader)
+						.responseFields(basicResponseFields)
+						.build()
+				)));
+	}
+
+	@DisplayName("ott 계정 조회 api")
+	@Test
+	void success_get_ott_account_info() throws Exception {
+		String accessToken = JwtProperties.TOKEN_PREFIX + jwtUtil.createAccessToken(5L);
+
+		mockMvc.perform(get("/api/v1/party/{partyId}/ottAccountInfo", 1)
+				.header(JwtProperties.HEADER, accessToken)
+				.queryParam("isLeader", "false")
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.success").value("true"))
+			.andDo(MockMvcRestDocumentationWrapper.document("ott 계정 정보 이메일 전송요청 API",
+				preRequestProcessorWithAuthorization,
+				preResponseProcessor
+				, ResourceDocumentation.resource(
+					ResourceSnippetParameters.builder()
+						.tag("파티 API")
+						.description("ott 계정 정보 이메일 전송요청")
+						.pathParameters(
+							new ParameterDescriptorWithType("partyId")
+								.description("Ott 계정 정보를 요청하는 파티 id")
+						)
+						.queryParameters(new ParameterDescriptorWithType("isLeader").description("파티장 여부"))
+						.responseFields(basicResponseFields)
+						.build()
+				)));
+	}
+
+	@DisplayName("ott 계정 비밀번호 변경 api")
+	@Test
+	void change_ott_account_password() throws Exception {
+		String accessToken = JwtProperties.TOKEN_PREFIX + jwtUtil.createAccessToken(8L);
+
+		mockMvc.perform(put("/api/v1/party/{partyId}/changePassword", 1)
+				.header(JwtProperties.HEADER, accessToken)
+				.queryParam("changingPassword", "asdfffddccx")
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.success").value("true"))
+			.andDo(MockMvcRestDocumentationWrapper.document("ott 계정 비밀번호 변경 API",
+				preRequestProcessorWithAuthorization,
+				preResponseProcessor
+				, ResourceDocumentation.resource(
+					ResourceSnippetParameters.builder()
+						.tag("파티 API")
+						.description("ott 계정 비밀번호 변경")
+						.pathParameters(
+							new ParameterDescriptorWithType("partyId")
+								.description("파티 id")
+						)
+						.queryParameters(
+							new ParameterDescriptorWithType("changingPassword").description("변경하고자하는 비밀번호"))
 						.responseFields(basicResponseFields)
 						.build()
 				)));

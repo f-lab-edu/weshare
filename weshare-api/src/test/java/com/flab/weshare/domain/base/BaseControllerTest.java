@@ -1,6 +1,7 @@
 package com.flab.weshare.domain.base;
 
 import static com.flab.weshare.domain.utils.TestUtil.*;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -10,10 +11,13 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.restdocs.operation.preprocess.OperationRequestPreprocessor;
+import org.springframework.restdocs.operation.preprocess.OperationResponsePreprocessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +33,7 @@ import com.flab.core.infra.PartyRepository;
 import com.flab.core.infra.UserRepository;
 import com.flab.weshare.config.RedisTestContainerConfig;
 import com.flab.weshare.config.TestContainerConfig;
+import com.flab.weshare.utils.AesBytesEncryptUtil;
 import com.flab.weshare.utils.jwt.JwtProperties;
 import com.flab.weshare.utils.jwt.JwtUtil;
 
@@ -40,6 +45,7 @@ import jakarta.persistence.EntityManager;
 @Import({TestContainerConfig.class})
 @SpringBootTest
 @AutoConfigureMockMvc
+@AutoConfigureRestDocs
 public abstract class BaseControllerTest {
 	@Autowired
 	protected MockMvc mockMvc;
@@ -60,6 +66,9 @@ public abstract class BaseControllerTest {
 	protected PartyCapsuleRepository partyCapsuleRepository;
 
 	@Autowired
+	private AesBytesEncryptUtil aesBytesEncryptUtil;
+
+	@Autowired
 	EntityManager entityManager;
 
 	@Autowired
@@ -70,6 +79,35 @@ public abstract class BaseControllerTest {
 
 	protected String ACCESS_TOKEN;
 	protected String REFRESH_TOKEN;
+
+	protected OperationRequestPreprocessor preRequestProcessorWithAuthorization = preprocessRequest(
+		modifyHeaders()
+			.remove("Content-Length")
+			.remove("X-Content-Type-Options")
+			.remove("X-XSS-Protection")
+			.remove("Cac"
+				+ "he-Control")
+			.remove("Pragma")
+			.remove("Expires")
+			.remove("X-Frame-Options"),
+		prettyPrint());
+
+	protected OperationRequestPreprocessor preRequestProcessor = preprocessRequest(
+		modifyHeaders()
+			.remove("Content-Length")
+			.remove("X-Content-Type-Options")
+			.remove("X-XSS-Protection")
+			.remove("Cache-Control")
+			.remove("Pragma")
+			.remove("Expires")
+			.remove("X-Frame-Options"),
+		prettyPrint());
+
+	protected OperationResponsePreprocessor preResponseProcessor = preprocessResponse(
+		modifyHeaders()  // 헤더 내용 수정
+			.remove("Content-Length")
+			.remove("Host"),
+		prettyPrint());
 
 	@BeforeEach
 	void setUpLogin() {
@@ -102,6 +140,13 @@ public abstract class BaseControllerTest {
 		partyCapsuleRepository.save(partyCapsule);
 		List<PartyCapsule> partyCapsules = createPartyCapsules(users);
 		partyCapsuleRepository.saveAll(partyCapsules);
+
+		partyRepository.findAll()
+			.forEach(
+				party -> {
+					party.changePassword(aesBytesEncryptUtil.encrypt(party.getOttAccountPassword()));
+				}
+			);
 
 		entityManager.flush();
 		entityManager.clear();
