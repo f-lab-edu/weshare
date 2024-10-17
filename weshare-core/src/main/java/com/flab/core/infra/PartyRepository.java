@@ -25,4 +25,11 @@ public interface PartyRepository extends JpaRepository<Party, Long> {
 		+ "join fetch p.ott "
 		+ "where p.leader =:user")
 	List<Party> findByUserIdWithOtt(@Param("user") User user);
+
+	@Query("select distinct p "
+		+ "from Party p "
+		+ "join fetch p.partyCapsules pc "
+		+ "where p.id =:partyId "
+		+ "and pc.partyCapsuleStatus = com.flab.core.entity.PartyCapsuleStatus.OCCUPIED")
+	Optional<Party> findPartyAndOccupiedPartyCapsules(@Param("partyId") Long partyId);
 }
