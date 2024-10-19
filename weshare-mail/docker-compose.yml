@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  weshare-mail:
+    container_name: weshare-mail
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    tty: true
+    env_file:
+      - .env
+    environment:
+      - SERVER_PORT=8083
+    networks:
+      - springboot-network
+networks:
+  springboot-network:
+    external: true
+
+

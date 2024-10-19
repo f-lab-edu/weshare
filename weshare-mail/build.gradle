@@ -15,3 +15,22 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-json'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 }
+
+
+task('buildAndRun2') {
+    dependsOn 'build'
+    finalizedBy 'dockerUpMAIL'
+}
+
+task('quickBuildUpMail') {
+    dependsOn('assemble')
+    finalizedBy('dockerUpMAIL')
+}
+
+task('dockerUpMAIL') {
+    doLast {
+        exec {
+            commandLine 'docker-compose', 'up', '-d', '--build'
+        }
+    }
+}
