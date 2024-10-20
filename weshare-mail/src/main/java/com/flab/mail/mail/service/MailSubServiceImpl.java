@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flab.mail.mail.dto.AccountInfoMailDto;
 import com.flab.mail.mail.dto.EmailDto;
+import com.flab.mail.mail.dto.PartyJoinMailDto;
 import com.flab.mail.mail.dto.SuccessPartyExtensionMailDto;
 import com.flab.mail.mail.view.MailConstructor;
 
@@ -45,6 +46,20 @@ public class MailSubServiceImpl implements MailSubService {
 			EmailDto emailDto = mailConstructor.constructOttAccountInfoMail(accountInfoMailDto);
 			mailService.sendMail(emailDto);
 		} catch (MessagingException | IOException e) {
+			log.error(e.getMessage());
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public void handlePartyJoin(String message) {
+		try {
+			PartyJoinMailDto partyJoinMailDto = objectMapper.readValue(message,
+				PartyJoinMailDto.class);
+			EmailDto emailDto = mailConstructor.constructPartyJoinMail(partyJoinMailDto);
+			mailService.sendMail(emailDto);
+		} catch (MessagingException | IOException e) {
+			log.error(e.getMessage());
 			throw new RuntimeException(e);
 		}
 	}
