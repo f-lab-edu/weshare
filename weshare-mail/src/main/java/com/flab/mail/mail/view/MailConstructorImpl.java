@@ -6,6 +6,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.flab.mail.mail.dto.AccountInfoMailDto;
 import com.flab.mail.mail.dto.EmailDto;
+import com.flab.mail.mail.dto.PartyJoinMailDto;
 import com.flab.mail.mail.dto.SuccessPartyExtensionMailDto;
 
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,16 @@ public class MailConstructorImpl implements MailConstructor {
 			.isHtml(true)
 			.subject("Weshare Ott 계정 정보 발송")
 			.body(createBodyByTemplateEngine(accountInfoMailDto, "ottAccountInfoMail"))
+			.build();
+	}
+
+	@Override
+	public EmailDto constructPartyJoinMail(PartyJoinMailDto partyJoinMailDto) {
+		return EmailDto.builder()
+			.toAddress(partyJoinMailDto.email())
+			.isHtml(true)
+			.subject("Wesahre Party 가입 안내 발송")
+			.body(createBodyByTemplateEngine(partyJoinMailDto, "partyJoinMail"))
 			.build();
 	}
 
