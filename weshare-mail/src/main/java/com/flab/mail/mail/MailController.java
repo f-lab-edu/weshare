@@ -40,8 +40,6 @@ public class MailController {
 				"jangu3384@gmail.com"
 			);
 
-		redisTemplate.convertAndSend(CHANNEL_PARTY_EXTENSION, successPartyExtensionMailDto);
-
 		log.info("isListening() = {}", redisMessageListenerContainer.isListening());
 		log.info("isActive() = {}", redisMessageListenerContainer.isActive());
 		log.info("isRunning() = {}", redisMessageListenerContainer.isRunning());
