@@ -1,5 +1,6 @@
 package com.flab.mail.mail.dto;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 public record SuccessPartyExtensionMailDto(
@@ -9,5 +10,6 @@ public record SuccessPartyExtensionMailDto(
 	LocalDate paymentDate,
 	Integer price,
 	String emailAddress
-) {
+) implements Serializable {
+	private static final long serialVersionUID = 1L;
 }
