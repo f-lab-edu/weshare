@@ -7,6 +7,8 @@ services:
       context: .
       dockerfile: Dockerfile
 
+    tty: true
+
     ports:
       - "8082:8082"
     env_file:

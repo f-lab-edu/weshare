@@ -19,6 +19,7 @@ ext['spring-security.version'] = '6.1.7'
 dependencies {
     implementation project(':weshare-core')
     implementation project(':weshare-pay')
+    implementation project(':weshare-mail')
 
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -33,9 +34,12 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
 
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
     testImplementation('com.epages:restdocs-api-spec-mockmvc:0.18.2')
+
 }
 
 openapi3 {
@@ -46,6 +50,10 @@ openapi3 {
     format = 'yaml'
 }
 
+task('quickBuildUp') {
+    dependsOn('assemble')
+    finalizedBy('dockerUpAPI')
+}
 
 task('cleanandopenapi3') {
     dependsOn 'clean'
@@ -57,15 +65,18 @@ task('buildopenapi3') {
     finalizedBy 'build'
 }
 
-task('buildAndRun') {
+task('buildAndRun1') {
     dependsOn 'buildopenapi3'
-    finalizedBy 'dockerUp'
+    finalizedBy 'dockerUpAPI'
 }
 
-task('dockerUp', type: Exec) {
-    commandLine 'docker-compose', 'up', '-d', '--build'
+task('dockerUpAPI') {
+    doLast {
+        exec {
+            commandLine 'docker-compose', 'up', '-d', '--build'
+        }
+    }
 }
-
 
 test {
     useJUnitPlatform()
