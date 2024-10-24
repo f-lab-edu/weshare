@@ -18,6 +18,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.flab.mail.mail.dto.EmailDto;
 import com.flab.mail.mail.dto.EmailResponseDto;
@@ -25,6 +26,7 @@ import com.flab.mail.mail.dto.EmailResponseDto;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
+@ActiveProfiles("test")
 @SpringBootTest
 @EnableRetry
 class MailServiceImplTest {

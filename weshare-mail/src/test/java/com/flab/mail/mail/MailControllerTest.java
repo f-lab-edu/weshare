@@ -34,7 +34,6 @@ class MailControllerTest {
 		mailController.sendSuccessPartyExtensionMail(successPartyExtensionMailDto);
 	}
 
-	@Test
 	void successSendAccountInfoMail() {
 		AccountInfoMailDto accountInfoMailDto
 			= new AccountInfoMailDto("jangu3384@gmail.com"

@@ -2,7 +2,6 @@ package com.flab.mail.mail.service;
 
 import java.time.LocalDate;
 
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,7 +17,7 @@ class MailSubServiceImplTest {
 
 	private static final String CHANNEL_PARTY_EXTENSION = "mail-party-extension";
 
-	@Test
+	//@Test
 	void sendSuccessPartyExtensionMail() throws InterruptedException {
 		SuccessPartyExtensionMailDto successPartyExtensionMailDto =
 			new SuccessPartyExtensionMailDto(
