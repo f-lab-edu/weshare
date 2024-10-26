@@ -30,10 +30,6 @@ subprojects {
         implementation 'org.springframework.boot:spring-boot-starter-logging'
         implementation 'org.projectlombok:lombok'
         implementation 'org.springframework.boot:spring-boot-configuration-processor'
-//        implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-//        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-
-
         testImplementation 'org.projectlombok:lombok'
         annotationProcessor 'org.projectlombok:lombok'
         testAnnotationProcessor 'org.projectlombok:lombok'
@@ -89,7 +85,7 @@ project(':weshare-pay') {
 }
 
 project(':weshare-mail') {
-    bootJar { enabled = false }
+    bootJar { enabled = true }
     jar {
         enabled = true
     }
