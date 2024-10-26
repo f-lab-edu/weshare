@@ -5,15 +5,20 @@ import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.flab.mail.mail.dto.AccountInfoMailDto;
 import com.flab.mail.mail.dto.SuccessPartyExtensionMailDto;
+import com.flab.mail.mail.service.MailSubService;
 
 @ActiveProfiles("test")
 @SpringBootTest
 class MailControllerTest {
 	@Autowired
-	MailController mailEventListener;
+	MailController mailController;
+	@MockBean
+	MailSubService mailSubService;
 
 	@Test
 	void success() {
@@ -26,6 +31,18 @@ class MailControllerTest {
 			, "jangu3384@gmail.com"
 		);
 
-		mailEventListener.sendSuccessPartyExtensionMail(successPartyExtensionMailDto);
+		mailController.sendSuccessPartyExtensionMail(successPartyExtensionMailDto);
+	}
+
+	@Test
+	void successSendAccountInfoMail() {
+		AccountInfoMailDto accountInfoMailDto
+			= new AccountInfoMailDto("jangu3384@gmail.com"
+			, "fff222"
+			, "sdafasdf22"
+			, "netflix"
+		);
+
+		mailController.sendOttAccountInfo(accountInfoMailDto);
 	}
 }
