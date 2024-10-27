@@ -209,3 +209,4 @@ gradle-app.setting
 weshare-api/src/main/resources/sql/init.sql
 
 weshare-api/src/test/resources/sql/init.sql
+/weshare-api/src/main/resources/static/testBilling.html
