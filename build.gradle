@@ -47,6 +47,7 @@ subprojects {
         builder = 'paketobuildpacks/builder-jammy-base:latest'
     }
 
+
     tasks.named('test') {
         useJUnitPlatform()
     }
@@ -56,6 +57,72 @@ subprojects {
     }
 
 }
+
+tasks.register("startDockerDesktop") {
+    group = 'docker'
+    description = 'Start Docker Desktop on macOS and wait for the daemon to be ready'
+
+    doLast {
+        println '🚀 Docker Desktop 실행 중...'
+        exec {
+            commandLine 'open', '-a', 'Docker'
+            ignoreExitValue = true
+        }
+
+        // 최대 30초까지 대기하며 docker info 체크
+        def maxAttempts = 30
+        def attempts = 0
+
+        while (true) {
+            def output = new ByteArrayOutputStream()
+            def result = exec {
+                commandLine 'docker', 'info'
+                standardOutput = output
+                errorOutput = new ByteArrayOutputStream()
+                ignoreExitValue = true
+            }
+
+            if (result.exitValue == 0) {
+                println '✅ Docker daemon is now running.'
+                break
+            }
+
+            attempts++
+            if (attempts >= maxAttempts) {
+                throw new GradleException('❌ Docker daemon failed to start within timeout.')
+            }
+
+            println "⏳ Waiting for Docker to be ready... (${attempts}s)"
+            sleep(1000)
+        }
+    }
+}
+
+
+task('dockerUpDBANDREDIS') {
+    mustRunAfter("startDockerDesktop")
+
+    doLast {
+        println("db,redis up")
+        exec {
+            commandLine 'docker-compose', 'up', '-d'
+        }
+    }
+}
+
+
+tasks.register("runapiandmail") {
+    dependsOn("startDockerDesktop")
+    dependsOn("dockerUpDBANDREDIS")
+    dependsOn(":weshare-api:buildAndRun1")
+    dependsOn(":weshare-mail:buildAndRun2")
+
+    gradle.taskGraph.whenReady { taskGraph ->
+        tasks.findByPath(":weshare-api:buildAndRun1")?.mustRunAfter("dockerUpDBANDREDIS")
+        tasks.findByPath(":weshare-mail:buildAndRun2")?.mustRunAfter(":weshare-api:buildAndRun1")
+    }
+}
+
 
 project(':weshare-batch') { // 컴파일 시 multi-module-database 로딩
     dependencies {
