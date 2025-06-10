@@ -9,6 +9,7 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
 import com.flab.mail.mail.dto.EmailDto;
+import com.flab.mail.mail.dto.PartyJoinMailDto;
 import com.flab.mail.mail.dto.SuccessPartyExtensionMailDto;
 
 class MailConstructorImplTest {
@@ -44,6 +45,21 @@ class MailConstructorImplTest {
 		);
 
 		EmailDto emailDto = mailConstructor.constructRegularPaidMail(successPartyExtensionMailDto);
+		System.out.println(emailDto);
+	}
+
+	@Test
+	void sucessPartyjoin() {
+		PartyJoinMailDto partyJoinMailDto = new PartyJoinMailDto(
+			"jangu3394@gmail.com",
+			LocalDate.of(2025, 5, 25),
+			"test22",
+			LocalDate.of(2025, 6, 25),
+			"asdfdf",
+			"adsf22",
+			"넷플릭스"
+		);
+		EmailDto emailDto = mailConstructor.constructPartyJoinMail(partyJoinMailDto);
 		System.out.println(emailDto);
 	}
 }

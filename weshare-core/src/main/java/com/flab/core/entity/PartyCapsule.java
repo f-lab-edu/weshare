@@ -1,6 +1,7 @@
 package com.flab.core.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,7 +43,6 @@ public class PartyCapsule extends BaseEntity {
 	private PartyCapsuleStatus partyCapsuleStatus;
 
 	private LocalDate expirationDate;
-
 	private LocalDate joinDate;
 
 	private boolean cancelReservation;
@@ -76,6 +76,10 @@ public class PartyCapsule extends BaseEntity {
 		this.partyCapsuleStatus = PartyCapsuleStatus.DELETED;
 	}
 
+	public void cancelReservation() {
+		this.cancelReservation = true;
+	}
+
 	public void occupy(final User user) {
 		this.partyMember = user;
 		this.partyCapsuleStatus = PartyCapsuleStatus.PRE_OCCUPIED;
@@ -86,6 +90,13 @@ public class PartyCapsule extends BaseEntity {
 	}
 
 	public void changeToOccupy() {
+		this.partyCapsuleStatus = PartyCapsuleStatus.OCCUPIED;
+	}
+
+	public void partyJoin(final User user, final LocalDateTime joinDate, final LocalDateTime expTime) {
+		this.partyMember = user;
+		this.joinDate = joinDate.toLocalDate();
+		this.expirationDate = expTime.toLocalDate();
 		this.partyCapsuleStatus = PartyCapsuleStatus.OCCUPIED;
 	}
 

@@ -2,7 +2,10 @@ package com.flab.weshare.domain.party.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +21,8 @@ import com.flab.core.infra.PartyCapsuleRepository;
 import com.flab.core.infra.PartyJoinRepository;
 import com.flab.core.infra.PartyRepository;
 import com.flab.core.infra.UserRepository;
-import com.flab.weshare.domain.party.dto.ContractRenewalResponse;
+import com.flab.mail.mail.service.MailPublisher;
+import com.flab.weshare.config.cacheConfig.CacheNames;
 import com.flab.weshare.domain.party.dto.LeadingPartySummary;
 import com.flab.weshare.domain.party.dto.ModifyPartyRequest;
 import com.flab.weshare.domain.party.dto.ParticipatedPartyDto;
@@ -27,11 +31,11 @@ import com.flab.weshare.domain.party.dto.PartyCapsuleInfo;
 import com.flab.weshare.domain.party.dto.PartyCreationRequest;
 import com.flab.weshare.domain.party.dto.PartyInfo;
 import com.flab.weshare.domain.party.dto.PartyJoinRequest;
-import com.flab.weshare.domain.party.dto.SignContractResponse;
 import com.flab.weshare.exception.ErrorCode;
 import com.flab.weshare.exception.exceptions.CommonClientException;
 import com.flab.weshare.exception.exceptions.CommonNotFoundException;
 import com.flab.weshare.exception.exceptions.UnsatisfiedAuthorityException;
+import com.flab.weshare.utils.AesBytesEncryptUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,12 +44,18 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class PartyService {
+	private static final String PARTY_RESOURCE_NAME = "party";
+	private static final String PARTY_CAPSULE_RESOURCE_NAME = "party capsule";
+
 	private final PartyRepository partyRepository;
 	private final PartyCapsuleRepository partyCapsuleRepository;
 	private final PartyJoinRepository partyJoinRepository;
 	private final OttRepository ottRepository;
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final AesBytesEncryptUtil aesBytesEncryptUtil;
+	private final RedisTemplate<String, String> redisTemplate;
+	private final MailPublisher mailPublisher;
 
 	@Transactional
 	public Long generateParty(final PartyCreationRequest partyCreationRequest, final Long requestPartyLeaderId) {
@@ -55,7 +65,7 @@ public class PartyService {
 		validateCapacity(requestOtt, partyCreationRequest.capacity());
 
 		User requestPartyLeader = userRepository.getReferenceById(requestPartyLeaderId);
-		String encodedPassword = passwordEncoder.encode(partyCreationRequest.ottAccountPassword());
+		String encodedPassword = aesBytesEncryptUtil.encrypt(partyCreationRequest.ottAccountPassword());
 		Party generatedParty = saveParty(partyCreationRequest, requestOtt, requestPartyLeader, encodedPassword);
 
 		savePartyCapsules(partyCreationRequest.capacity(), generatedParty);
@@ -166,6 +176,7 @@ public class PartyService {
 		}
 	}
 
+	@Cacheable(value = CacheNames.PARTY_TOTAL, key = "#userId")
 	@Transactional(readOnly = true)
 	public ParticipatedPartyDto findAllParticipatedParties(final Long userId) {
 		log.info("userId {}", userId);
@@ -183,6 +194,7 @@ public class PartyService {
 		return new ParticipatedPartyDto(leadingPartySummaries, participatingPartySummaries);
 	}
 
+	@Cacheable(value = CacheNames.PARTY_INFO, key = "#partyId")
 	@Transactional(readOnly = true)
 	public PartyInfo getPartyInfo(Long partyId, Long userId) {
 		Party party = partyRepository.findFetchByPartyId(partyId)
@@ -191,6 +203,7 @@ public class PartyService {
 		return PartyInfo.of(party);
 	}
 
+	@Cacheable(value = CacheNames.PARTY_CAPSULE_INFO, key = "#partyCapsuleId")
 	@Transactional(readOnly = true)
 	public PartyCapsuleInfo getPartyCapsuleInfo(Long partyCapsuleId, Long userId) {
 		PartyCapsule partyCapsule = partyCapsuleRepository.findPartyCapsuleById(partyCapsuleId)
@@ -206,23 +219,80 @@ public class PartyService {
 		}
 	}
 
-	public ContractRenewalResponse formContractRenewalResponse(final Long partyCapsuleId) {
-		PartyCapsule partyCapsule = partyCapsuleRepository.findByIdForFetchAll(partyCapsuleId).orElseThrow(
+	private PartyCapsule findPartyCapsule(Long partyCapsuleId) {
+		return partyCapsuleRepository.findById(partyCapsuleId).orElseThrow(
 			() -> new IllegalArgumentException("partyCapsule 엔티티가 존재하지 않음. partyCapsuleId = " + partyCapsuleId)
 		);
+	}
 
-		return new ContractRenewalResponse(partyCapsule.getPartyMember().getEmail(), partyCapsule.getExpirationDate(),
-			partyCapsule.getParty().getOtt().getName());
+	@Transactional
+	public void suspendPartyCapsule(final Long partyCapsuleId, final Long userId) {
+		PartyCapsule partyCapsule = findPartyCapsule(partyCapsuleId);
+		checkAuthority(userId, partyCapsule.getPartyMember().getId());
+		partyCapsule.cancelReservation();
 	}
 
 	@Transactional(readOnly = true)
-	public SignContractResponse formSignContractResponse(final Long partyCapsuleId) {
-		PartyCapsule partyCapsule = partyCapsuleRepository.findByIdForFetchAll(partyCapsuleId).orElseThrow(
-			() -> new IllegalArgumentException("partyCapsule 엔티티가 존재하지 않음. partyCapsuleId = " + partyCapsuleId)
-		);
+	public void sendOttAccountInfoToUserEmail(final Long partyId, final Long userId, final boolean isLeader) {
+		Party party = partyRepository.findPartyAndOccupiedPartyCapsules(partyId)
+			.orElseThrow(() -> new CommonNotFoundException(ErrorCode.makeSpecificResourceNotFoundErrorCode("party ")));
 
-		return new SignContractResponse(partyCapsule.getPartyMember().getEmail(), partyCapsule.getExpirationDate(),
-			partyCapsule.getParty().getOtt().getName(), partyCapsule.getParty().getOttAccountId(),
-			partyCapsule.getParty().getOttAccountPassword());
+		validateRequestAuthority(userId, isLeader, party);
+		checkRepeatable(partyId, userId);
+
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new CommonNotFoundException(ErrorCode.makeSpecificResourceNotFoundErrorCode("user ")));
+
+		//async
+		publishOttAccountInfoMail(user, party);
+	}
+
+	@Transactional
+	public void changeOttPassword(final Long partyId, final Long userId, final String password) {
+		Party party = partyRepository.findPartyAndOccupiedPartyCapsules(partyId)
+			.orElseThrow(() -> new CommonNotFoundException(ErrorCode.makeSpecificResourceNotFoundErrorCode("party ")));
+
+		validateRequestAuthority(userId, true, party);
+		party.changePassword(aesBytesEncryptUtil.encrypt(password));
+
+		party.getPartyCapsules().forEach(partyCapsule -> {
+			publishOttAccountInfoMail(partyCapsule.getPartyMember(), party);
+		});
+	}
+
+	private void publishOttAccountInfoMail(User user, Party party) {
+		mailPublisher.publishAccountInfoMessage(user.getEmail(), party.getOttAccountId(),
+			aesBytesEncryptUtil.decrypt(party.getOttAccountPassword()), party.getOtt().getName());
+	}
+
+	private void checkRepeatable(Long partyId, Long userId) {
+		String complicatedKeyString = makeComplicatedKeyString(partyId, userId);
+		if (!isAcceptedRequestForSendAccountInfoEmail(complicatedKeyString)) {
+			throw new CommonClientException(ErrorCode.TOO_EARLY_REQUEST);
+		}
+
+	}
+
+	private boolean isAcceptedRequestForSendAccountInfoEmail(String complicatedKeyString) {
+		return Boolean.TRUE.equals(
+			redisTemplate.opsForValue().setIfAbsent(complicatedKeyString, "1", 24, TimeUnit.HOURS));
+	}
+
+	private String makeComplicatedKeyString(final Long partyId, final Long userId) {
+		return String.format("userId:%s:partyId=%s", partyId, userId);
+	}
+
+	private void validateRequestAuthority(Long userId, boolean isLeader, Party party) {
+		if (isLeader) {
+			checkAuthority(userId, party.getLeader().getId());
+		} else {
+			boolean isPartyMember = party.getPartyCapsules()
+				.stream()
+				.anyMatch(partyCapsule -> partyCapsule.getPartyMember().getId().equals(userId));
+
+			if (!isPartyMember) {
+				throw new UnsatisfiedAuthorityException(ErrorCode.INSUFFICIENT_AUTHORITY);
+			}
+		}
 	}
 }

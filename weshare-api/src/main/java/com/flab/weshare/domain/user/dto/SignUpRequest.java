@@ -6,11 +6,10 @@ import static com.flab.weshare.utils.RegEx.Pattern.*;
 import com.flab.core.entity.Role;
 import com.flab.core.entity.User;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
-public record SignUpRequest(@NotNull @Email(message = "이메일 형식에 맞지 않습니다.") String email,
+public record SignUpRequest(@NotNull @Pattern(regexp = EMAIL_PATTERN, message = EMAIL_MESSAGE) String email,
 							@NotNull @Pattern(regexp = PASSWORD_PATTERN, message = PASSWORD_MESSAGE) String password,
 							@NotNull @Pattern(regexp = NICKNAME_PATTERN, message = NICKNAME_MESSAGE) String nickName,
 							@NotNull @Pattern(regexp = TELEPHONE_PATTERN, message = TELEPHONE_MESSAGE) String telephone) {

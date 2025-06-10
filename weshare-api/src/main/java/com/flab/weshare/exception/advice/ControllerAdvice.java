@@ -38,7 +38,8 @@ public class ControllerAdvice {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(CommonClientException.class)
 	public BaseResponse commonExceptionHandler(CommonClientException commonClientException) {
-		log.error("exception :", commonClientException);
+		log.error("exception : {} \n body : {}", commonClientException.getStackTrace(),
+			commonClientException.getErrorCode());
 		return BaseResponse.fail(ErrorResponse.of(commonClientException.getErrorCode()));
 	}
 

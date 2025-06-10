@@ -10,8 +10,7 @@ public record PartyInfo(Long partyId,
 						List<ParticipantSummary> participants,
 						LocalDate startDate,
 						String ottName,
-						String ottAccountId,
-						String ottAccountPassword) {
+						String ottAccountId) {
 
 	public static PartyInfo of(final Party party) {
 		return new PartyInfo(
@@ -19,8 +18,7 @@ public record PartyInfo(Long partyId,
 			participantSummaries(party.getPartyCapsules()),
 			party.getCreatedDate().toLocalDate(),
 			party.getOtt().getName(),
-			party.getOttAccountId(),
-			party.getOttAccountPassword()
+			party.getOttAccountId()
 		);
 	}
 

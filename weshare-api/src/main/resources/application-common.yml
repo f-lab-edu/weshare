@@ -1,6 +1,8 @@
 spring:
   config:
     import: optional:file:.env[.properties]
+  cache:
+    type: redis
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -12,16 +14,16 @@ spring:
     open-in-view: false
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
-  mail:
-    properties:
-      mail:
-        debug: true
-        smtp:
-          connectiontimeout: 5000
-          starttls:
-            enable: true
-            required: true
-          auth: false
+#  mail:
+#    properties:
+#      mail:
+#        debug: true
+#        smtp:
+#          connectiontimeout: 5000
+#          starttls:
+#            enable: true
+#            required: true
+#          auth: false
 
 jwt:
   access_expiration_time: ${JWT_ACCESS_EXPIRATION_TIME}
@@ -35,3 +37,25 @@ pay:
 aes:
   password: ${AES_PASSWORD}
   salt: ${AES_SALT}
+
+cache:
+  ttl_minutes: ${CACHE_TTL_MINUTES}
+
+springdoc:
+  swagger-ui:
+    groups-order: DESC
+    tags-sorter: alpha
+    operations-sorter: method
+    disable-swagger-default-url: true
+    display-request-duration: true
+    defaultModelsExpandDepth: 2
+    defaultModelExpandDepth: 2
+  api-docs:
+    path: /api-docs
+  show-actuator: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  writer-with-default-pretty-printer: true
+  model-and-view-allowed: true
+  paths-to-match:
+    - /api/**

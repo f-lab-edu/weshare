@@ -1,5 +1,7 @@
 package com.flab.core.entity;
 
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -27,8 +29,13 @@ public class User extends BaseEntity {
 	private Long id;
 	private String email;
 	private String password;
+	private String clientId;
 	private String nickName;
 	private String telephone;
+
+	public void changePassword(String password) {
+		this.password = password;
+	}
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "available_card")
@@ -42,12 +49,15 @@ public class User extends BaseEntity {
 	private Role role;
 
 	@Builder
-	private User(String email, String password, String nickName, String telephone, Role role, Card availableCard) {
+	private User(Long id, String email, String password, String nickName, String telephone, Role role,
+		Card availableCard, String clientId) {
+		this.id = id;
 		this.email = email;
 		this.password = password;
 		this.nickName = nickName;
 		this.telephone = telephone;
 		this.role = role;
+		this.clientId = clientId != null ? clientId : UUID.randomUUID().toString();
 		this.availableCard = availableCard;
 	}
 

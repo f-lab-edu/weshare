@@ -7,14 +7,11 @@ import static org.mockito.BDDMockito.*;
 
 import java.util.Optional;
 
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.flab.core.entity.User;
@@ -38,10 +35,7 @@ public class AuthServiceTest {
 	PasswordEncoder passwordEncoder;
 
 	@Mock
-	RedisTemplate<String, String> redisTemplate;
-
-	@Mock
-	ValueOperations<String, String> valueOperations;
+	TokenManager tokenManager;
 
 	@Mock
 	JwtUtil jwtUtil;
@@ -56,12 +50,10 @@ public class AuthServiceTest {
 
 	@Test
 	void login_success() {
-		given(userRepository.findByEmail(any(String.class))).willReturn(Optional.of(user));
+		given(userRepository.findByEmail(any(String.class))).willReturn(Optional.ofNullable(user));
 		given(passwordEncoder.matches(any(CharSequence.class), any(String.class))).willReturn(true);
 		given(user.getPassword()).willReturn(savedUser.getPassword());
 		given(user.getId()).willReturn(USER_ID);
-		given(redisTemplate.opsForValue()).willReturn(valueOperations);
-		doNothing().when(valueOperations).set(any(), any(), anyLong(), any());
 
 		LoginResponse loginResponse = authService.login(loginRequest);
 		assertThat(loginResponse).isNotNull();
@@ -80,7 +72,7 @@ public class AuthServiceTest {
 
 	@Test
 	void login_with_wrong_password() {
-		given(userRepository.findByEmail(any(String.class))).willReturn(Optional.of(user));
+		given(userRepository.findByEmail(any(String.class))).willReturn(Optional.ofNullable(user));
 		given(passwordEncoder.matches(any(CharSequence.class), any(String.class))).willReturn(false);
 		given(user.getPassword()).willReturn(savedUser.getPassword());
 
@@ -92,38 +84,12 @@ public class AuthServiceTest {
 	void reIssue_success() {
 		given(jwtAuthentication.getToken()).willReturn("testToken");
 		given(jwtAuthentication.getId()).willReturn(1L);
-		given(redisTemplate.opsForValue()).willReturn(valueOperations);
-		given(valueOperations.getAndDelete(anyString())).willReturn("testToken");
-		doNothing().when(valueOperations).set(any(), any(), anyLong(), any());
 
 		LoginResponse loginResponse = authService.reIssue(jwtAuthentication);
 		assertThat(loginResponse).isNotNull();
 
 		then(jwtUtil).should(times(1)).createAccessToken(USER_ID);
 		then(jwtUtil).should(times(1)).createRefreshToken(USER_ID);
-	}
-
-	@DisplayName("Redis에 userId로 등록된 refresh token이 존재하지 않을시 예외를 발생한다.")
-	@Test
-	void reIssue_fail_alreadyLoggedOut() {
-		given(jwtAuthentication.getId()).willReturn(1L);
-		given(redisTemplate.opsForValue()).willReturn(valueOperations);
-		given(valueOperations.getAndDelete(anyString())).willReturn(null);
-
-		testErrorSituation(() -> authService.reIssue(jwtAuthentication), CommonClientException.class,
-			ErrorCode.INVALID_REFRESH_TOKEN);
-	}
-
-	@DisplayName("Redis에 userId로 등록된 refresh token과 request 헤더의 refresh token이 다를시 예외를 일으킨다.")
-	@Test
-	void reIssue_fail_different_refresh_token() {
-		given(jwtAuthentication.getToken()).willReturn("testToken");
-		given(jwtAuthentication.getId()).willReturn(1L);
-		given(redisTemplate.opsForValue()).willReturn(valueOperations);
-		given(valueOperations.getAndDelete(anyString())).willReturn("notTestToken");
-
-		testErrorSituation(() -> authService.reIssue(jwtAuthentication), CommonClientException.class,
-			ErrorCode.INVALID_REFRESH_TOKEN);
 	}
 
 	private void testErrorSituation(ThrowingCallable shouldRaiseThrowable, Class expectedClass, ErrorCode errorCode) {

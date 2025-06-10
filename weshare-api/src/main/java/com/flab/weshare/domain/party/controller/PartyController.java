@@ -8,12 +8,14 @@ import java.util.Map;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -106,5 +108,31 @@ public class PartyController {
 	public BaseResponse getPartyCapsule(
 		@PathVariable final Long partyCapsuleId, @AuthenticationPrincipal final JwtAuthentication jwtAuthentication) {
 		return BaseResponse.success(partyService.getPartyCapsuleInfo(partyCapsuleId, jwtAuthentication.getId()));
+	}
+
+	@DeleteMapping("/participated/{partyCapsuleId}")
+	@ResponseStatus(HttpStatus.OK)
+	public BaseResponse deletePartyCapsule(
+		@PathVariable final Long partyCapsuleId, @AuthenticationPrincipal final JwtAuthentication jwtAuthentication) {
+		partyService.suspendPartyCapsule(partyCapsuleId, jwtAuthentication.getId());
+		return BaseResponse.success();
+	}
+
+	@GetMapping("/{partyId}/ottAccountInfo")
+	@ResponseStatus(HttpStatus.OK)
+	public BaseResponse getPartyAccountInfo(@PathVariable final Long partyId,
+		@RequestParam final boolean isLeader,
+		@AuthenticationPrincipal final JwtAuthentication jwtAuthentication) {
+		partyService.sendOttAccountInfoToUserEmail(partyId, jwtAuthentication.getId(), isLeader);
+		return BaseResponse.success();
+	}
+
+	@PutMapping("/{partyId}/changePassword")
+	@ResponseStatus(HttpStatus.OK)
+	public BaseResponse getPartyAccountInfo(@PathVariable final Long partyId,
+		@RequestParam final String changingPassword,
+		@AuthenticationPrincipal final JwtAuthentication jwtAuthentication) {
+		partyService.changeOttPassword(partyId, jwtAuthentication.getId(), changingPassword);
+		return BaseResponse.success();
 	}
 }
